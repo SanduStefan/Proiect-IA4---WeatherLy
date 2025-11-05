@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather App</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background: #4a90e2; /* fundal simplu */
+            color: #fff;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        h1 { font-size: 3em; margin-bottom: 30px; }
+
+        .weather-card {
+            background: rgba(0,0,0,0.5);
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 1.5em;
+            text-align: left;
+        }
+
+        .error { color: #ff5555; }
+    </style>
+</head>
+<body>
+
+<div class="content">
+    <h1>Vremea în {{ city }}</h1>
+
+    {% if weather.get('error') %}
+        <p class="error">Eroare: {{ weather.get('error') }}</p>
+    {% else %}
+        <div class="weather-card">
+            <p><strong>Temperatura:</strong> {{ weather.get('temperature') }}°C</p>
+            <p><strong>Condiții:</strong> {{ weather.get('condition') }}</p>
+            <p><strong>Umiditate:</strong> {{ weather.get('humidity') }}%</p>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
