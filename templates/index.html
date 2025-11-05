@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather App</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -1;
+            object-fit: cover;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            color: #fff;
+            text-align: center;
+            top: 50%;
+            transform: translateY(-50%);
+            text-shadow: 1px 1px 4px #000;
+        }
+
+        h1 { font-size: 3em; margin-bottom: 30px; }
+        .weather-card {
+            background: rgba(0,0,0,0.5);
+            display: inline-block;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 1.5em;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <video class="video-bg" autoplay muted loop>
+        <source src="{{ url_for('static', filename='videos0001-0060.mp4') }}" type="video/mp4">
+        Browserul tău nu suportă video HTML5.
+    </video>
+
+    <div class="content">
+        <h1>Vremea în {{ city }}</h1>
+
+        {% if weather.error %}
+            <p style="color:red;">Eroare: {{ weather.error }}</p>
+        {% else %}
+            <div class="weather-card">
+                <p><strong>Temperatura:</strong> {{ weather.temperature }}°C</p>
+                <p><strong>Condiții:</strong> {{ weather.condition }}</p>
+                <p><strong>Umiditate:</strong> {{ weather.humidity }}%</p>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
