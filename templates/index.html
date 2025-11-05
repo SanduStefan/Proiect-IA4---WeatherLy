@@ -1,55 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Weather App</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: Arial, sans-serif;
-            background: #4a90e2; /* fundal simplu */
-            color: #fff;
-        }
+<meta charset="UTF-8">
+<title>WeatherLy</title>
+<style>
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    background: linear-gradient(to bottom, #1e3c72, #2a5298);
+}
 
-        .content {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            text-align: center;
-        }
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: rgba(0,0,0,0.3);
+}
 
-        h1 { font-size: 3em; margin-bottom: 30px; }
+.menu-buttons {
+    display: flex;
+    gap: 20px;
+}
 
-        .weather-card {
-            background: rgba(0,0,0,0.5);
-            padding: 20px 40px;
-            border-radius: 15px;
-            font-size: 1.5em;
-            text-align: left;
-        }
+.menu-buttons button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+}
 
-        .error { color: #ff5555; }
-    </style>
+.menu-buttons button:hover {
+    background: #1a73e8;
+}
+
+.typewriter {
+    font-size: 1em;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 2px solid #fff;
+    display: inline-block;
+    max-width: 450px;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: calc(100% - 70px);
+    text-align: center;
+}
+
+h1 { font-size: 2em; margin-bottom: 30px; }
+
+.weather-card, .metric-card {
+    background: rgba(0,0,0,0.5);
+    padding: 20px 40px;
+    border-radius: 15px;
+    font-size: 1.2em;
+    text-align: left;
+    margin-top: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s ease;
+}
+
+.weather-card.show, .metric-card.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.error { color: #ff5555; }
+
+form input[type="text"] {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    margin-right: 10px;
+}
+
+form input[type="submit"] {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background: #1a73e8;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+form input[type="submit"]:hover {
+    background: #155ab6;
+}
+
+.spinner {
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top: 4px solid #fff;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin-top: 20px;
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
 </head>
 <body>
 
+<div class="navbar">
+    <div class="typewriter" id="typewriter"></div>
+    <div class="menu-buttons">
+        <button>About Us</button>
+        <button>Log In</button>
+        <button>Metric Information</button>
+    </div>
+</div>
+
 <div class="content">
-    <h1>Vremea în {{ city }}</h1>
+    <h1>
+        {% if city %}
+            Vremea în {{ city }}
+        {% else %}
+            Bun venit pe WeatherLy!
+        {% endif %}
+    </h1>
+
+    <form method="POST" id="weatherForm">
+        <input type="text" name="city" placeholder="Introdu orașul..." required>
+        <input type="submit" value="Caută">
+    </form>
+
+    <div class="spinner" id="spinner"></div>
 
     {% if weather.get('error') %}
-        <p class="error">Eroare: {{ weather.get('error') }}</p>
-    {% else %}
-        <div class="weather-card">
+        <p class="error">{{ weather.get('error') }}</p>
+    {% elif city %}
+        <div class="weather-card" id="weatherCard">
             <p><strong>Temperatura:</strong> {{ weather.get('temperature') }}°C</p>
             <p><strong>Condiții:</strong> {{ weather.get('condition') }}</p>
             <p><strong>Umiditate:</strong> {{ weather.get('humidity') }}%</p>
         </div>
+        <div class="metric-card" id="metricCard">
+            <p><strong>UV Index:</strong> {{ weather.get('uv') }}</p>
+            <p><strong>Viteza vântului:</strong> {{ weather.get('wind_kph') }} kph</p>
+            <p><strong>Temperatura resimțită:</strong> {{ weather.get('feelslike_c') }}°C</p>
+        </div>
     {% endif %}
 </div>
+
+<script>
+const text = "WeatherLy - Rain or Sun, we got you covered";
+const typewriterElement = document.getElementById("typewriter");
+let index = 0;
+let deleting = false;
+
+function type() {
+    if (!deleting) {
+        typewriterElement.textContent = text.slice(0, index + 1);
+        index++;
+        if (index === text.length) {
+            deleting = true;
+            setTimeout(type, 1500);
+            return;
+        }
+    } else {
+        typewriterElement.textContent = text.slice(0, index - 1);
+        index--;
+        if (index === 0) deleting = false;
+    }
+    setTimeout(type, deleting ? 50 : 100);
+}
+
+type();
+
+const form = document.getElementById('weatherForm');
+const spinner = document.getElementById('spinner');
+const weatherCard = document.getElementById('weatherCard');
+const metricCard = document.getElementById('metricCard');
+
+form.addEventListener('submit', () => {
+    spinner.style.display = 'block';
+    if (weatherCard) weatherCard.classList.remove('show');
+    if (metricCard) metricCard.classList.remove('show');
+});
+
+window.addEventListener('load', () => {
+    if (weatherCard) weatherCard.classList.add('show');
+    if (metricCard) metricCard.classList.add('show');
+    spinner.style.display = 'none';
+});
+</script>
 
 </body>
 </html>
