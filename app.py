@@ -17,7 +17,7 @@ def get_bg_video(condition):
         return "fog.mp4"
     elif "senin" in cond or "clear" in cond or "soare" in cond or "însorit" in cond:
         return "sun.mp4"
-    elif "rain" in cond or "ploaie" in cond or "drizzle" in cond:
+    elif "rain" in cond or "ploaie" in cond or "drizzle" in cond or "ploi" in cond:
         return "rain.mp4"
     elif "cloud" in cond or "noros" in cond or "acoperit" in cond:
         return "cloud.mp4"
@@ -81,8 +81,7 @@ def more_details(city):
 
 @app.route("/popular_cities")
 def popular_cities():
-    # Adăugăm bg_video și aici pentru a păstra fundalul pe pagina cu lista de orașe
-    return render_template("popular_cities.html", cities=TOP_CITIES, bg_video="default.mp4")
+    return render_template("popular_cities.html", cities=TOP_CITIES, bg_video="city.mp4")
 
 if __name__ == "__main__":
     app.run(debug=True)
