@@ -1,0 +1,26 @@
+def weather_message(temp, condition):
+    cond = condition.lower()
+    advice = ""
+    
+    if temp < 5:
+        advice = "E foarte frig! Geacă groasă, fular și mănuși neapărat. 🥶"
+    elif 5 <= temp < 15:
+        advice = "Destul de răcoare. O jachetă de toamnă sau un palton e ideal. 🧥"
+    elif 15 <= temp < 22:
+        advice = "Vreme perfectă! Un hanorac sau o geacă de piele e suficientă. 👕"
+    elif 22 <= temp < 30:
+        advice = "E cald și bine! Tricou și haine lejere de bumbac. 👕"
+    else:
+        advice = "Caniculă! Haine cât mai subțiri, șapcă și multă apă. ☀️"
+
+    if "ploaie" in cond or "rain" in cond:
+        advice += " Nu uita umbrela, se anunță stropi! ☔"
+    elif "zăpadă" in cond or "snow" in cond:
+        advice += " Atenție la polei, ia încălțări cu talpă aderentă! 🥾"
+        
+    return advice
+
+def get_uv_advice(uv):
+    if uv <= 2: return "UV scăzut. Totul e sigur."
+    if uv <= 5: return "UV moderat. Poartă ochelari de soare."
+    return "UV ridicat! Aplică cremă cu protecție solară."

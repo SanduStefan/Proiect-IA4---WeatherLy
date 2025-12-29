@@ -1,0 +1,144 @@
+:root {
+    --primary: #00d2ff;
+    --accent: #9d50bb;
+    --glass: rgba(255, 255, 255, 0.1);
+}
+
+/* --- DYNAMIC VIDEO BACKGROUND --- */
+#bg-video {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -1;
+    object-fit: cover;
+    filter: brightness(45%);
+}
+
+body {
+    margin: 0; font-family: 'Poppins', sans-serif;
+    color: white; min-height: 100vh;
+    background-color: #0f0c29; /* Fallback */
+}
+
+/* --- NAVBAR & ANIMATED LOGO --- */
+.navbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 10%; background: var(--glass); backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 100;
+}
+
+.logo {
+    display: flex; text-decoration: none; font-size: 26px;
+    font-weight: 800; gap: 3px; cursor: pointer;
+}
+
+.logo span {
+    position: relative; color: white; display: inline-block;
+    opacity: 0; transform: translateY(15px);
+    animation: revealLetter 0.5s ease forwards;
+    animation-delay: calc(var(--i) * 0.1s);
+}
+
+.logo .highlight { color: var(--primary); }
+
+/* Micuțul soare deasupra literelor */
+.logo span::before {
+    content: '☀️';
+    position: absolute; top: -22px; left: 50%;
+    transform: translateX(-50%) scale(0);
+    font-size: 12px;
+    animation: sunPop 0.6s ease forwards;
+    animation-delay: calc(var(--i) * 0.1s + 0.3s);
+}
+
+@keyframes revealLetter {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sunPop {
+    0% { transform: translateX(-50%) scale(0); opacity: 0; }
+    50% { transform: translateX(-50%) scale(1.4); opacity: 1; }
+    100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+}
+
+.nav-links { list-style: none; display: flex; gap: 25px; }
+.nav-links a { color: white; text-decoration: none; font-weight: 500; transition: 0.3s; }
+.nav-links a:hover { color: var(--primary); }
+
+/* --- CARDS & SEARCH --- */
+.card {
+    background: var(--glass); border-radius: 30px; padding: 40px;
+    margin: 60px auto; max-width: 650px; backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1); text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.btn {
+    padding: 12px 25px; border-radius: 25px; border: none;
+    background: linear-gradient(45deg, var(--primary), var(--accent));
+    color: white; cursor: pointer; font-weight: bold; transition: 0.3s;
+}
+
+/* --- ABOUT PAGE STYLES --- */
+.about-container {
+    padding: 20px;
+    animation: fadeIn 1s ease-in;
+}
+
+.about-hero {
+    max-width: 900px !important;
+    margin-bottom: 30px !important;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-top: 10px;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.about-item {
+    margin: 0 !important; /* Resetăm marginile de la .card general */
+    padding: 30px;
+    transition: transform 0.3s ease;
+}
+
+.about-item:hover {
+    transform: translateY(-10px);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.about-item h3 {
+    margin: 15px 0;
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#chat-widget {
+    position: fixed; bottom: 0; right: 30px; width: 320px;
+    background: #1a1a2e; border-radius: 15px 15px 0 0;
+    box-shadow: 0 0 25px rgba(0,0,0,0.6); z-index: 1000;
+    transition: transform 0.4s ease; border: 1px solid var(--primary);
+}
+.chat-closed { transform: translateY(305px); }
+.chat-open { transform: translateY(0); }
+
+#chat-header { background: var(--primary); padding: 12px; cursor: pointer; display: flex; justify-content: space-between; }
+#chat-box { height: 250px; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.msg { padding: 10px 14px; border-radius: 12px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+.bot { background: var(--glass); align-self: flex-start; }
+.user { background: var(--accent); align-self: flex-end; }
+.chat-input { display: flex; padding: 12px; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.1); }
+.chat-input input { flex: 1; background: none; border: none; color: white; outline: none; }

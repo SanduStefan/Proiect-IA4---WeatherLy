@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h1>Orașe Populare</h1>
+    <div class="grid">
+        {% for city in cities %}
+        <a href="/more_details/{{ city }}" class="stat-item" style="text-decoration: none; color: white; border: 1px solid var(--primary);">
+            <h3>{{ city }}</h3>
+            <p>Click pentru detalii</p>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

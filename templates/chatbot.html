@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatBot - WeatherLy</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4a90e2, #50e3c2);
+            color: #fff;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .menu-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-log {
+            width: 80%;
+            max-width: 600px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 300px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+        }
+
+        .chat-log p {
+            margin: 10px 0;
+        }
+
+        .user-msg { color: #ffd700; }
+        .bot-msg { color: #00ffff; }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input[type="text"] {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            flex: 1;
+        }
+
+        .chat-input input[type="submit"] {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            background: #1a73e8;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input input[type="submit"]:hover {
+            background: #155ab6;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div>WeatherLy - ChatBot</div>
+    <div class="menu-buttons">
+        <button onclick="window.location.href='/'">Home</button>
+        <button onclick="window.location.href='/popular_cities'">Top Cities</button>
+    </div>
+</div>
+
+<h1>ChatBot WeatherLy</h1>
+
+<div class="chat-container">
+    <div class="chat-log" id="chatLog">
+        {% for msg in chat_log %}
+            <p class="{{ msg.sender }}-msg"><strong>{{ msg.sender|capitalize }}:</strong> {{ msg.text }}</p>
+        {% endfor %}
+    </div>
+
+    <form method="POST" class="chat-input">
+        <input type="text" name="user_input" placeholder="Scrie întrebarea ta..." required>
+        <input type="submit" value="Trimite">
+    </form>
+</div>
+
+</body>
+</html>

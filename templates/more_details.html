@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h1>Detalii Avansate: {{ city.capitalize() }}</h1>
+    <div class="grid">
+        <div class="stat-item">
+            <i class="fas fa-thermometer-half"></i>
+            <p>Se simte ca</p>
+            <h3>{{ weather.feelslike_c }}°C</h3>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-wind"></i>
+            <p>Vânt</p>
+            <h3>{{ weather.wind_kph }} km/h</h3>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-sun"></i>
+            <p>Index UV</p>
+            <h3>{{ weather.uv }}</h3>
+            <small>{{ uv_advice }}</small>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-tint"></i>
+            <p>Umiditate</p>
+            <h3>{{ weather.humidity }}%</h3>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-eye"></i>
+            <p>Vizibilitate</p>
+            <h3>{{ weather.visibility_km }} km</h3>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-compress-arrows-alt"></i>
+            <p>Presiune</p>
+            <h3>{{ weather.pressure_mb }} mb</h3>
+        </div>
+    </div>
+    <br><br>
+    <a href="/" class="btn" style="text-decoration: none;">Înapoi</a>
+</div>
+{% endblock %}

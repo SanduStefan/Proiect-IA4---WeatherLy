@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="about-container">
+    <div class="card about-hero">
+        <h1>Despre <span style="color: var(--primary);">WeatherLy</span></h1>
+        <p class="subtitle">Partenerul tău inteligent pentru călătorii fără surprize meteo.</p>
+    </div>
+
+    <div class="about-grid">
+        <div class="card about-item">
+            <i class="fas fa-bullseye fa-3x" style="color: var(--primary); margin-bottom: 15px;"></i>
+            <h3>Misiunea Noastră</h3>
+            <p>WeatherLy s-a născut din dorința de a transforma datele meteo brute în recomandări utile. Nu îți spunem doar temperatura, ci îți spunem ce să porți și unde să pleci pentru a găsi soarele.</p>
+        </div>
+
+        <div class="card about-item">
+            <i class="fas fa-microchip fa-3x" style="color: var(--accent); margin-bottom: 15px;"></i>
+            <h3>Tehnologie Inteligentă</h3>
+            <p>Folosim API-uri de ultimă generație și un algoritm de filtrare personalizat pentru a analiza peste 100 de destinații globale în timp real.</p>
+        </div>
+
+        <div class="card about-item">
+            <i class="fas fa-robot fa-3x" style="color: #ffce54; margin-bottom: 15px;"></i>
+            <h3>Asistent AI</h3>
+            <p>ChatBot-ul nostru integrat te ajută să găsești destinația perfectă bazată pe preferințele tale: buget, activități sau tipul de natură preferat.</p>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="/" class="btn">Înapoi la Căutare</a>
+    </div>
+</div>
+{% endblock %}

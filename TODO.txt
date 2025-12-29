@@ -1,0 +1,5 @@
+-> prelucrare sugestii
+-> imbunatatire sugestii/pop-uri
+-> modificare fundal animat
+-> imbunatatire meniu
+-> imbunatatire aspect

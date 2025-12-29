@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherLy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="{{ url_for('static', filename='videos/' + (bg_video if bg_video else 'default.mp4')) }}" type="video/mp4">
+    </video>
+
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <span style="--i:1">W</span>
+            <span style="--i:2">E</span>
+            <span style="--i:3">A</span>
+            <span style="--i:4">T</span>
+            <span style="--i:5">H</span>
+            <span style="--i:6">E</span>
+            <span style="--i:7">R</span>
+            <span class="highlight" style="--i:8">L</span>
+            <span class="highlight" style="--i:9">Y</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">Acasă</a></li>
+            <li><a href="/popular_cities">Orașe</a></li>
+            <li><a href="/about">Despre</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <div id="chat-widget" class="chat-closed">
+        <div id="chat-header" onclick="toggleChat()">
+            <span><i class="fas fa-robot"></i> WeatherBot</span>
+            <i id="chat-icon" class="fas fa-chevron-up"></i>
+        </div>
+        <div id="chat-content">
+            <div id="chat-box">
+                <div class="msg bot">Bună! Eu sunt asistentul tău. Întreabă-mă orice despre vreme sau haine!</div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="Scrie aici...">
+                <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleChat() {
+            const widget = document.getElementById('chat-widget');
+            const icon = document.getElementById('chat-icon');
+            if (widget.classList.contains('chat-closed')) {
+                widget.classList.replace('chat-closed', 'chat-open');
+                icon.className = 'fas fa-chevron-down';
+            } else {
+                widget.classList.replace('chat-open', 'chat-closed');
+                icon.className = 'fas fa-chevron-up';
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            if (!input.value.trim()) return;
+
+            const userMsg = input.value;
+            chatBox.innerHTML += `<div class="msg user">${userMsg}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: userMsg})
+            });
+            const data = await response.json();
+            chatBox.innerHTML += `<div class="msg bot">${data.response}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Permite trimiterea cu Enter
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
