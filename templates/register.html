@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.PNG') }}" type="image/png">
+    <meta charset="UTF-8">
+    <title>Register - WeatherLy</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #4a90e2, #50e3c2);
+            font-family: Arial;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .card {
+            background: rgba(0,0,0,0.5);
+            padding: 30px;
+            border-radius: 15px;
+            width: 300px;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: none;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background: #1a73e8;
+            color: #fff;
+            cursor: pointer;
+        }
+        a { color: #90ee90; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Register</h2>
+
+    <form method="POST">
+    <input name="username" placeholder="Username" required>
+    <input name="password" type="password" placeholder="Parola" required>
+    <button type="submit">Register</button>
+    <p>Ai deja cont? <a href="{{ url_for('login') }}">Login</a></p>
+</form>
+
+</div>
+
+</body>
+</html>

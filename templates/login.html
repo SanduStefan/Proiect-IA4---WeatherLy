@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - WeatherLy</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}" type="image/png">
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4a90e2, #50e3c2);
+            color: #fff;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 45px;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+
+        .logo span {
+            font-size: 1.8em;
+            filter: drop-shadow(0 0 6px rgba(255,255,255,0.6));
+        }
+
+        .typewriter {
+            font-size: 0.95em;
+            opacity: 0.85;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 2px solid rgba(255,255,255,0.8);
+        }
+
+        .glow-btn {
+            padding: 11px 26px;
+            border-radius: 14px;
+            border: none;
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.35s ease;
+        }
+
+        .glow-btn:hover {
+            background: rgba(255,255,255,0.35);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+        }
+
+        /* ===== LOGIN CARD ===== */
+        .page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 90px);
+        }
+
+        .card {
+            background: rgba(0,0,0,0.5);
+            padding: 40px;
+            border-radius: 20px;
+            width: 340px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .card h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1em;
+            opacity: 0.9;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: none;
+            font-size: 1em;
+        }
+
+        button.login-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: #1a73e8;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        button.login-btn:hover {
+            background: #155ab6;
+        }
+
+        a {
+            color: #90ee90;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div class="logo">
+        <span>🌦️</span>
+        <div>
+            <div>WeatherLy</div>
+            <div class="typewriter" id="typewriter"></div>
+        </div>
+    </div>
+
+    <a href="{{ url_for('home') }}">
+        <button class="glow-btn">Home</button>
+    </a>
+</div>
+
+<!-- LOGIN -->
+<div class="page">
+    <div class="card">
+        <h2>Login</h2>
+        <p class="subtitle">Log in for more features 🚀</p>
+
+        <form method="POST">
+            <input name="username" placeholder="Username" required>
+            <input name="password" type="password" placeholder="Password" required>
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+
+        <p style="margin-top: 15px;">
+            Nu ai cont? <a href="{{ url_for('register') }}">Register</a>
+        </p>
+    </div>
+</div>
+
+<!-- TYPEWRITER -->
+<script>
+const text = "Secure access • Personalized weather • Favorites";
+const el = document.getElementById("typewriter");
+let i = 0;
+
+(function type() {
+    el.textContent = text.slice(0, i++);
+    if (i <= text.length) setTimeout(type, 85);
+})();
+</script>
+
+</body>
+</html>
