@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width: 400px;">
+    <h1>Autentificare</h1>
+    <form method="POST" class="search-box" style="flex-direction: column; gap: 15px;">
+        <input type="text" name="username" placeholder="Utilizator" required>
+        <input type="password" name="password" placeholder="Parolă" required>
+        <button type="submit" class="btn">Intră în cont</button>
+    </form>
+    <p style="margin-top: 15px;">Nu ai cont? Contactează admin-ul.</p>
+</div>
+{% endblock %}
