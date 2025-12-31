@@ -1,17 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card" style="max-width: 500px;">
-    <h1>Setări Profil</h1>
-    <p>Configurează locația ta preferată pentru pornirea aplicației.</p>
-    
-    <form method="POST" style="margin-top: 20px;">
-        <label>Orașul / Destinația Favorită:</label><br>
-        <input type="text" name="fav_city" value="{{ current_user.favorite_city }}" class="auth-input" required>
-        <button type="submit" class="btn" style="width: 90%; margin-top: 20px;">Salvează Preferința</button>
+<div class="card" style="max-width: 650px;">
+    <h1>Configurare <span style="color: var(--primary);">Profil</span></h1>
+    <form method="POST">
+        <div style="text-align: left; margin-top: 20px;">
+            <p><b>📍 Oraș Principal:</b></p>
+            <input type="text" name="fav_city" value="{{ current_user.favorite_city }}" class="auth-input">
+            
+            <p><b>🏙️ Alte Orașe Preferate:</b></p>
+            <input type="text" name="other_cities" value="{{ current_user.other_cities }}" class="auth-input" placeholder="Ex: Paris, Tokyo, Madrid">
+            
+            <p><b>🌍 Destinații de Vis:</b></p>
+            <input type="text" name="fav_destinations" value="{{ current_user.fav_destinations }}" class="auth-input" placeholder="Unde vrei să ajungi?">
+            
+            <p><b>✨ Ce îți place în vacanță?</b></p>
+            <input type="text" name="interests" value="{{ current_user.interests }}" class="auth-input" placeholder="Natură, plajă, liniște, aventură...">
+        </div>
+        <button type="submit" class="btn" style="width: 100%; margin-top: 30px;">Salvează Setările</button>
     </form>
-    
-    <div style="margin-top: 20px;">
-        <a href="/" style="color: var(--primary);">← Înapoi la Vreme</a>
-    </div>
 </div>
 {% endblock %}

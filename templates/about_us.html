@@ -1,38 +1,110 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card about-hero" style="max-width: 900px;">
-    <h1>Despre <span style="color: var(--primary);">WeatherLy</span></h1>
-    <p>Inovație în meteorologie și asistență personalizată.</p>
+<div class="about-container" style="padding: 20px;">
+    <div class="card about-hero" style="max-width: 900px; margin: 0 auto 40px auto; animation: fadeIn 0.8s ease-out;">
+        <h1>Despre <span style="color: var(--primary);">WeatherLy</span></h1>
+        <p style="font-size: 1.2rem; opacity: 0.9;">Inovație în meteorologie și asistență personalizată pentru călătoriile tale.</p>
+    </div>
 
-    <div class="grid" style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        <div class="card about-item" style="margin: 0; padding: 20px;">
-            <i class="fas fa-bullseye fa-2x" style="color: var(--primary);"></i>
-            <h3>Misiune</h3>
-            <p>Date exacte pentru decizii zilnice corecte.</p>
+    <div class="grid" style="max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+        
+        <div class="card about-item hover-lift" style="margin: 0; padding: 30px; text-align: center;">
+            <i class="fas fa-bullseye fa-3x" style="color: var(--primary); margin-bottom: 15px;"></i>
+            <h3 style="color: var(--primary);">Misiune</h3>
+            <p>Furnizăm date exacte în timp real pentru a te ajuta să iei cele mai bune decizii zilnice, indiferent de destinație.</p>
         </div>
-        <div class="card about-item" style="margin: 0; padding: 20px;">
-            <i class="fas fa-robot fa-2x" style="color: var(--accent);"></i>
-            <h3>Asistent AI</h3>
-            <p>Recomandări vestimentare bazate pe senzori reali.</p>
+
+        <div class="card about-item hover-lift" style="margin: 0; padding: 30px; text-align: center;">
+            <i class="fas fa-robot fa-3x" style="color: var(--accent); margin-bottom: 15px;"></i>
+            <h3 style="color: var(--accent);">Asistent AI</h3>
+            <p>Algoritmii noștri analizează temperatura și umiditatea pentru a-ți oferi recomandări vestimentare instantanee.</p>
         </div>
-        <div class="card about-item" style="margin: 0; padding: 20px;">
-            <i class="fas fa-users fa-2x" style="color: #ffce54;"></i>
-            <h3>Comunitate</h3>
-            <p>Peste 1 milion de utilizatori mulțumiți lunar.</p>
+
+        <div class="card about-item hover-lift" style="margin: 0; padding: 30px; text-align: center;">
+            <i class="fas fa-users fa-3x" style="color: #ffce54; margin-bottom: 15px;"></i>
+            <h3 style="color: #ffce54;">Comunitate</h3>
+            <p>Ne mândrim cu o comunitate globală de peste 1 milion de utilizatori care explorează lumea alături de noi în fiecare lună.</p>
         </div>
-        <div class="card about-item" style="margin: 0; padding: 20px;">
-            <i class="fas fa-chart-line fa-2x" style="color: #48cfad;"></i>
-            <h3>Evoluție</h3>
-            <p>Dezvoltăm constant noi algoritmi de prognoză.</p>
+
+        <div class="card about-item hover-lift" style="margin: 0; padding: 30px; text-align: center;">
+            <i class="fas fa-chart-line fa-3x" style="color: #48cfad; margin-bottom: 15px;"></i>
+            <h3 style="color: #48cfad;">Evoluție</h3>
+            <p>Dezvoltăm constant noi modele de prognoză și integrăm feedback-ul utilizatorilor pentru a rafina acuratețea datelor.</p>
+        </div>
+
+    </div>
+
+    <div class="card" style="max-width: 800px; margin: 50px auto; padding: 40px; text-align: center;">
+        <h2 style="margin-bottom: 30px; letter-spacing: 2px;">SOCIAL MEDIA</h2>
+        <div class="social-grid" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+            
+            <a href="https://github.com" target="_blank" class="social-link">
+                <i class="fab fa-github fa-3x"></i>
+                <p style="margin-top: 8px; font-size: 0.9rem;">GitHub</p>
+            </a>
+            
+            <a href="https://facebook.com" target="_blank" class="social-link">
+                <i class="fab fa-facebook fa-3x"></i>
+                <p style="margin-top: 8px; font-size: 0.9rem;">Facebook</p>
+            </a>
+            
+            <a href="https://instagram.com" target="_blank" class="social-link">
+                <i class="fab fa-instagram fa-3x"></i>
+                <p style="margin-top: 8px; font-size: 0.9rem;">Instagram</p>
+            </a>
+            
+            <a href="https://x.com" target="_blank" class="social-link">
+                <i class="fab fa-x-twitter fa-3x"></i>
+                <p style="margin-top: 8px; font-size: 0.9rem;">X / Twitter</p>
+            </a>
+
         </div>
     </div>
 
-    <h2 style="margin-top: 50px;">Social Media</h2>
-    <div class="social-grid" style="display: flex; justify-content: center; gap: 30px; margin-top: 20px;">
-        <a href="https://github.com" target="_blank" class="social-link"><i class="fab fa-github fa-2x"></i><p>GitHub</p></a>
-        <a href="https://facebook.com" target="_blank" class="social-link"><i class="fab fa-facebook fa-2x"></i><p>Facebook</p></a>
-        <a href="https://instagram.com" target="_blank" class="social-link"><i class="fab fa-instagram fa-2x"></i><p>Instagram</p></a>
-        <a href="https://x.com" target="_blank" class="social-link"><i class="fab fa-x-twitter fa-2x"></i><p>X</p></a>
+    <div style="text-align: center; margin-bottom: 50px;">
+        <a href="/" class="btn" style="text-decoration: none; padding: 15px 40px;">Înapoi la Home</a>
     </div>
 </div>
+
+<style>
+/* Efectul de ridicare la hover solicitat */
+.hover-lift {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    cursor: default;
+}
+
+.hover-lift:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 210, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: var(--primary) !important;
+}
+
+/* Stil pentru link-urile sociale */
+.social-link {
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.social-link:hover {
+    color: var(--primary);
+    transform: scale(1.1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Adaptare pentru mobil */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
 {% endblock %}

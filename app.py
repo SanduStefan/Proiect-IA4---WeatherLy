@@ -6,7 +6,7 @@ from auth import db, User
 from weather_data import get_weather
 from utils import weather_message, get_uv_advice
 from chatbot import get_chatbot_response
-from city_manager import TOP_CITIES
+from city_manager import DESTINATIONS, TOP_CITIES
 
 app = Flask(__name__)
 app.secret_key = "weatherly_secret_key_123"
@@ -28,7 +28,8 @@ with app.app_context():
 def get_bg_video(condition):
     cond = condition.lower() if condition else ""
     if any(x in cond for x in ["fog", "ceață", "mist"]): return "fog.mp4"
-    if any(x in cond for x in ["senin", "clear", "soare", "sunny"]): return "sun.mp4"
+    if any(x in cond for x in ["însorit", "soare", "sunny"]): return "sun.mp4"
+    if any(x in cond for x in ["senin", "clear"]): return "clear.mp4"
     if any(x in cond for x in ["rain", "ploaie", "drizzle"]): return "rain.mp4"
     if any(x in cond for x in ["cloud", "nor", "acoperit"]): return "cloud.mp4"
     if any(x in cond for x in ["snow", "zapada", "ninsori"]): return "snow.mp4"
@@ -57,7 +58,6 @@ def register():
         username = request.form.get("username")
         password = request.form.get("password")
         
-        # Verificăm dacă userul există deja
         if User.query.filter_by(username=username).first():
             return render_template("register.html", error="Utilizatorul există deja.", bg_video="default.mp4")
             
@@ -67,9 +67,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         
-        # LOGARE AUTOMATĂ: Utilizatorul este logat imediat după creare
         login_user(new_user)
-        
         return redirect(url_for('index'))
     return render_template("register.html", bg_video="default.mp4")
 
@@ -88,6 +86,9 @@ def login():
 def settings():
     if request.method == "POST":
         current_user.favorite_city = request.form.get("fav_city")
+        current_user.other_cities = request.form.get("other_cities")
+        current_user.fav_destinations = request.form.get("fav_destinations")
+        current_user.interests = request.form.get("interests")
         db.session.commit()
         return redirect(url_for('index'))
     return render_template("settings.html", bg_video="default.mp4")
@@ -112,7 +113,20 @@ def more_details(city):
 
 @app.route("/popular_cities")
 def popular_cities():
-    return render_template("popular_cities.html", cities=TOP_CITIES, bg_video="city.mp4")
+    # Sortăm și grupăm orașele pe continente
+    regions = ["Europa", "Asia", "America", "Africa & Altele"]
+    categorized = {}
+    
+    for r in regions:
+        if r == "Africa & Altele":
+            cities_in_reg = [d["name"] for d in DESTINATIONS if d.get("region") not in ["Europa", "Asia", "America"]]
+        else:
+            cities_in_reg = [d["name"] for d in DESTINATIONS if d.get("region") == r]
+        
+        if cities_in_reg:
+            categorized[r] = sorted(cities_in_reg)
+
+    return render_template("popular_cities.html", categorized=categorized, bg_video="city.mp4")
 
 @app.route("/api/chat", methods=["POST"])
 def chat_api():
@@ -120,7 +134,6 @@ def chat_api():
     user_msg = data.get("message", "")
     current_city = data.get("city", "")
     
-    # Adăugăm contextul orașului în mesajul trimis către chatbot dacă este disponibil
     full_prompt = user_msg
     if current_city:
         full_prompt = f"Sunt în {current_city}. {user_msg}"

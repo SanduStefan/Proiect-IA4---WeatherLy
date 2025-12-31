@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Critic pentru prevenirea flash-ului alb la încărcare */
+        body.dark-mode { background-color: #0a0a0b !important; color: #e0e0e0; }
+    </style>
 </head>
 <body>
     <video autoplay muted loop playsinline id="bg-video">
@@ -28,7 +32,6 @@
                     <i class="fas fa-moon"></i>
                 </button>
             </li>
-            
             <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
             <li><a href="/popular_cities"><i class="fas fa-city"></i> Orașe</a></li>
             <li><a href="/about"><i class="fas fa-info-circle"></i> Despre</a></li>
@@ -65,27 +68,39 @@
     </div>
 
     <script>
-        // Funcția Dark Mode
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
+        // --- LOGICĂ DARK MODE (Persistă pe tot site-ul) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkModeStatus = localStorage.getItem('darkMode');
             const btnIcon = document.querySelector('#dark-btn i');
+            if (darkModeStatus === 'enabled') {
+                document.body.classList.add('dark-mode');
+                if(btnIcon) btnIcon.classList.replace('fa-moon', 'fa-sun');
+            }
+        });
+
+        function toggleDarkMode() {
+            const btnIcon = document.querySelector('#dark-btn i');
+            document.body.classList.toggle('dark-mode');
             if (document.body.classList.contains('dark-mode')) {
-                btnIcon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('darkMode', 'enabled');
+                if(btnIcon) btnIcon.classList.replace('fa-moon', 'fa-sun');
             } else {
-                btnIcon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('darkMode', 'disabled');
+                if(btnIcon) btnIcon.classList.replace('fa-sun', 'fa-moon');
             }
         }
 
-        // Funcții Chatbot
+        // --- LOGICĂ CHATBOT (Reparată ridicarea și funcția de haine) ---
         function toggleChat() {
             const widget = document.getElementById('chat-widget');
             const icon = document.getElementById('chat-icon');
+            
             if (widget.classList.contains('chat-closed')) {
                 widget.classList.replace('chat-closed', 'chat-open');
-                icon.className = 'fas fa-chevron-down';
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
             } else {
                 widget.classList.replace('chat-open', 'chat-closed');
-                icon.className = 'fas fa-chevron-up';
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
             }
         }
 
@@ -93,32 +108,40 @@
             if (e.key === 'Enter') sendMessage();
         }
 
-        async function sendMessage() {
+        async function sendMessage(customMsg = null) {
             const input = document.getElementById('user-input');
             const chatBox = document.getElementById('chat-box');
-            const message = input.value.trim();
+            
+            const msgText = customMsg ? customMsg : input.value.trim();
+            if (!msgText) return;
 
-            if (!message) return;
+            const currentCity = "{{ city if city else '' }}";
 
-            // Afișează mesajul utilizatorului
-            chatBox.innerHTML += `<div class="msg user">${message}</div>`;
-            input.value = '';
+            chatBox.innerHTML += `<div class="msg user">${msgText}</div>`;
+            if (!customMsg) input.value = ''; 
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
+                    body: JSON.stringify({ message: msgText, city: currentCity })
                 });
                 const data = await response.json();
-                
-                // Afișează răspunsul botului
                 chatBox.innerHTML += `<div class="msg bot">${data.response}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch (error) {
                 console.error('Eroare chat:', error);
             }
+        }
+
+        // Aceasta este funcția apelată de butonul "Ce haine port?" din index.html
+        function askClothing(cityName) {
+            const widget = document.getElementById('chat-widget');
+            if (widget.classList.contains('chat-closed')) {
+                toggleChat();
+            }
+            sendMessage("Ce haine îmi recomanzi să port acum?");
         }
     </script>
 </body>
