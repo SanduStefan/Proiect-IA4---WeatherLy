@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width: 500px;">
+    <h1>Setări Profil</h1>
+    <p>Configurează locația ta preferată pentru pornirea aplicației.</p>
+    
+    <form method="POST" style="margin-top: 20px;">
+        <label>Orașul / Destinația Favorită:</label><br>
+        <input type="text" name="fav_city" value="{{ current_user.favorite_city }}" class="auth-input" required>
+        <button type="submit" class="btn" style="width: 90%; margin-top: 20px;">Salvează Preferința</button>
+    </form>
+    
+    <div style="margin-top: 20px;">
+        <a href="/" style="color: var(--primary);">← Înapoi la Vreme</a>
+    </div>
+</div>
+{% endblock %}

@@ -2,38 +2,52 @@
 {% block content %}
 <div class="card">
     <h1>Vremea în Timp Real</h1>
+    
     <form method="POST" class="search-box">
-        <input type="text" name="city" placeholder="Caută orașul tău (ex: Paris)..." required>
+        <input type="text" name="city" placeholder="Caută un oraș (ex: Paris)..." required class="auth-input" style="width: 60%;">
         <button type="submit" class="btn">Caută</button>
     </form>
 
     {% if weather and "error" not in weather %}
-    <div style="margin-top: 30px;">
-        <img src="{{ weather.icon }}" width="100">
-        <h2 style="font-size: 48px; margin: 0;">{{ weather.temperature }}°C</h2>
-        <h3>{{ city.capitalize() }}</h3>
-        <p style="font-style: italic; color: var(--primary);">{{ weather.condition }}</p>
-        <p><strong>💡 Sfat:</strong> {{ message }}</p>
+    <div style="margin-top: 30px; animation: fadeIn 0.8s ease-out;">
+        <img src="{{ weather.icon }}" width="100" alt="icon">
+        <h2 style="font-size: 56px; margin: 0; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            {{ weather.temperature }}°C
+        </h2>
+        <h3 style="text-transform: uppercase; letter-spacing: 2px;">{{ city }}</h3>
+        <p style="font-style: italic; color: var(--primary); font-size: 1.2rem;">{{ weather.condition }}</p>
         
-        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-            <a href="/more_details/{{ city }}" class="btn">Detalii Avansate</a>
+        <div class="stat-item" style="display: inline-block; padding: 15px 30px; margin-top: 15px;">
+            <p><strong>💡 Sfat:</strong> {{ message }}</p>
+        </div>
+        
+        <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
+            <a href="/more_details/{{ city }}" class="btn">
+                <i class="fas fa-chart-line"></i> Detalii & Grafic
+            </a>
             <button class="btn" style="background: var(--accent);" onclick="askBotAbout('{{ city }}')">
-                Întreabă Bot-ul de haine
+                <i class="fas fa-tshirt"></i> Ce haine port?
             </button>
         </div>
     </div>
     {% elif message %}
-    <p style="color: #ff4d4d; margin-top: 20px;">{{ message }}</p>
+    <div class="stat-item" style="margin-top: 20px; border-color: #ff4d4d;">
+        <p style="color: #ff4d4d;">{{ message }}</p>
+    </div>
     {% endif %}
 </div>
 
 <script>
 function askBotAbout(cityName) {
     const widget = document.getElementById('chat-widget');
-    if (widget.classList.contains('chat-closed')) toggleChat();
+    const input = document.getElementById('user-input');
     
-    document.getElementById('chat-input').value = `Ce haine sa iau in ${cityName}?`;
-    sendChat();
+    if (widget.classList.contains('chat-closed')) {
+        toggleChat();
+    }
+    
+    input.value = `Ce haine sa iau in ${cityName}?`;
+    sendMessage(); // Trimite automat mesajul către bot
 }
 </script>
 {% endblock %}

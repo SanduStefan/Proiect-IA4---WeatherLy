@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WeatherLy</title>
+    <title>WeatherLy - Smart Travel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;800&display=swap" rel="stylesheet">
@@ -14,21 +14,31 @@
     </video>
 
     <nav class="navbar">
-        <a href="/" class="logo">
-            <span style="--i:1">W</span>
-            <span style="--i:2">E</span>
-            <span style="--i:3">A</span>
-            <span style="--i:4">T</span>
-            <span style="--i:5">H</span>
-            <span style="--i:6">E</span>
-            <span style="--i:7">R</span>
-            <span class="highlight" style="--i:8">L</span>
-            <span class="highlight" style="--i:9">Y</span>
-        </a>
+        <div class="logo-wrapper">
+            <div class="logo-icon">⛅</div>
+            <div class="logo-text-group">
+                <a href="/" class="logo" style="padding:0; background:none; text-decoration: none;">WeatherLy</a>
+                <div class="typing-sub">Rain or sun, we got you covered...</div>
+            </div>
+        </div>
+
         <ul class="nav-links">
-            <li><a href="/">Acasă</a></li>
-            <li><a href="/popular_cities">Orașe</a></li>
-            <li><a href="/about">Despre</a></li>
+            <li>
+                <button onclick="toggleDarkMode()" class="btn" id="dark-btn" style="background:none; border:1px solid var(--primary); padding: 5px 12px; cursor: pointer;">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </li>
+            
+            <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/popular_cities"><i class="fas fa-city"></i> Orașe</a></li>
+            <li><a href="/about"><i class="fas fa-info-circle"></i> Despre</a></li>
+
+            {% if current_user.is_authenticated %}
+                <li><a href="/settings" style="color: var(--primary);"><i class="fas fa-user-cog"></i> Profil</a></li>
+                <li><a href="/logout" style="color: var(--accent); font-weight: bold;">Logout ({{ current_user.username }})</a></li>
+            {% else %}
+                <li><a href="/login" class="btn">Login</a></li>
+            {% endif %}
         </ul>
     </nav>
 
@@ -43,16 +53,30 @@
         </div>
         <div id="chat-content">
             <div id="chat-box">
-                <div class="msg bot">Bună! Eu sunt asistentul tău. Întreabă-mă orice despre vreme sau haine!</div>
+                <div class="msg bot">Bună! Eu sunt asistentul tău WeatherLy. Întreabă-mă orice despre vreme sau haine!</div>
             </div>
             <div class="chat-input">
-                <input type="text" id="user-input" placeholder="Scrie aici...">
-                <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                <input type="text" id="user-input" placeholder="Scrie aici..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()" class="btn" style="padding: 5px 15px; border-radius: 10px;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </div>
 
     <script>
+        // Funcția Dark Mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const btnIcon = document.querySelector('#dark-btn i');
+            if (document.body.classList.contains('dark-mode')) {
+                btnIcon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                btnIcon.classList.replace('fa-sun', 'fa-moon');
+            }
+        }
+
+        // Funcții Chatbot
         function toggleChat() {
             const widget = document.getElementById('chat-widget');
             const icon = document.getElementById('chat-icon');
@@ -65,30 +89,37 @@
             }
         }
 
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
         async function sendMessage() {
             const input = document.getElementById('user-input');
             const chatBox = document.getElementById('chat-box');
-            if (!input.value.trim()) return;
+            const message = input.value.trim();
 
-            const userMsg = input.value;
-            chatBox.innerHTML += `<div class="msg user">${userMsg}</div>`;
+            if (!message) return;
+
+            // Afișează mesajul utilizatorului
+            chatBox.innerHTML += `<div class="msg user">${message}</div>`;
             input.value = '';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({message: userMsg})
-            });
-            const data = await response.json();
-            chatBox.innerHTML += `<div class="msg bot">${data.response}</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                
+                // Afișează răspunsul botului
+                chatBox.innerHTML += `<div class="msg bot">${data.response}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                console.error('Eroare chat:', error);
+            }
         }
-
-        // Permite trimiterea cu Enter
-        document.getElementById('user-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
     </script>
 </body>
 </html>

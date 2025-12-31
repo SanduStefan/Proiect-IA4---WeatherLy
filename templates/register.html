@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width: 400px;">
+    <h1>Autentificare</h1>
+    <form method="POST">
+        <input type="text" name="username" placeholder="Utilizator" class="auth-input" required>
+        <input type="password" name="password" placeholder="Parolă" class="auth-input" required>
+        <button type="submit" class="btn" style="width: 85%; margin-top: 20px;">Intră în cont</button>
+    </form>
+    <p style="margin-top: 15px;">Nu ai cont? <a href="/register" style="color: var(--primary);">Înregistrează-te</a></p>
+</div>
+{% endblock %}

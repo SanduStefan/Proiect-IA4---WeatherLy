@@ -1,41 +1,49 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-    <h1>Detalii Avansate: {{ city.capitalize() }}</h1>
-    <div class="grid">
-        <div class="stat-item">
-            <i class="fas fa-thermometer-half"></i>
-            <p>Se simte ca</p>
-            <h3>{{ weather.feelslike_c }}°C</h3>
-        </div>
-        <div class="stat-item">
-            <i class="fas fa-wind"></i>
-            <p>Vânt</p>
-            <h3>{{ weather.wind_kph }} km/h</h3>
-        </div>
-        <div class="stat-item">
-            <i class="fas fa-sun"></i>
-            <p>Index UV</p>
-            <h3>{{ weather.uv }}</h3>
-            <small>{{ uv_advice }}</small>
-        </div>
-        <div class="stat-item">
-            <i class="fas fa-tint"></i>
-            <p>Umiditate</p>
-            <h3>{{ weather.humidity }}%</h3>
-        </div>
-        <div class="stat-item">
-            <i class="fas fa-eye"></i>
-            <p>Vizibilitate</p>
-            <h3>{{ weather.visibility_km }} km</h3>
-        </div>
-        <div class="stat-item">
-            <i class="fas fa-compress-arrows-alt"></i>
-            <p>Presiune</p>
-            <h3>{{ weather.pressure_mb }} mb</h3>
-        </div>
+<div class="card" style="max-width: 850px;">
+    <h1>{{ city.capitalize() }} - Evoluție și Locație</h1>
+    
+    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; margin-bottom: 25px;">
+        <canvas id="tempChart"></canvas>
     </div>
-    <br><br>
-    <a href="/" class="btn" style="text-decoration: none;">Înapoi</a>
+
+    <div class="grid">
+        <div class="stat-item"><i class="fas fa-wind"></i><h3>{{ weather.wind_kph }} km/h</h3><p>Vânt</p></div>
+        <div class="stat-item"><i class="fas fa-tint"></i><h3>{{ weather.humidity }}%</h3><p>Umiditate</p></div>
+        <div class="stat-item"><i class="fas fa-sun"></i><h3>{{ weather.uv }}</h3><p>{{ uv_advice }}</p></div>
+    </div>
+
+    <div style="margin-top: 30px; border-radius: 20px; overflow: hidden; height: 350px; border: 1px solid var(--primary);">
+        <iframe width="100%" height="100%" frameborder="0" 
+            src="https://maps.google.com/maps?q={{ city }}&t=&z=10&ie=UTF8&iwloc=&output=embed">
+        </iframe>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="/" class="btn">Înapoi la Home</a>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('tempChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Acum'],
+            datasets: [{
+                label: 'Temperatură (°C)',
+                data: {{ temp_history | tojson }},
+                borderColor: '#00d2ff',
+                backgroundColor: 'rgba(0, 210, 255, 0.2)',
+                fill: true, tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } },
+            plugins: { legend: { labels: { color: 'white' } } }
+        }
+    });
+</script>
 {% endblock %}

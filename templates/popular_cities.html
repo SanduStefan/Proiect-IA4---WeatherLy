@@ -1,14 +1,95 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-    <h1>Orașe Populare</h1>
-    <div class="grid">
+<div class="container">
+    <div class="card" style="max-width: 800px; margin-bottom: 50px;">
+        <h1>Destinații <span style="color: var(--primary);">Populare</span></h1>
+        <p>Explorează condițiile meteo în cele mai vizitate orașe din lume.</p>
+    </div>
+
+    <div class="city-timeline">
         {% for city in cities %}
-        <a href="/more_details/{{ city }}" class="stat-item" style="text-decoration: none; color: white; border: 1px solid var(--primary);">
-            <h3>{{ city }}</h3>
-            <p>Click pentru detalii</p>
-        </a>
+        <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="card city-card">
+                <div class="city-info">
+                    <h2>{{ city }}</h2>
+                    <p>Verifică prognoza actualizată și recomandările noastre.</p>
+                </div>
+                <a href="{{ url_for('index') }}" onclick="event.preventDefault(); document.getElementById('search-{{loop.index}}').submit();" class="btn">
+                    Vezi Vremea
+                </a>
+                <form id="search-{{loop.index}}" action="/" method="POST" style="display: none;">
+                    <input type="hidden" name="city" value="{{ city }}">
+                </form>
+            </div>
+        </div>
         {% endfor %}
     </div>
 </div>
+
+<style>
+/* Linie verticală centrală */
+.city-timeline {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 0;
+}
+
+.city-timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, var(--primary), var(--accent), transparent);
+    transform: translateX(-50%);
+}
+
+.timeline-item {
+    position: relative;
+    width: 100%;
+    margin-bottom: 60px;
+    display: flex;
+    justify-content: center;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border: 4px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    box-shadow: 0 0 15px var(--primary);
+}
+
+.city-card {
+    width: 40% !important;
+    margin: 0 !important;
+    padding: 25px !important;
+    transition: 0.4s;
+    z-index: 1;
+}
+
+.city-card:hover {
+    transform: scale(1.05) !important;
+    border-color: var(--primary);
+}
+
+/* Alternanță stânga-dreapta pentru desktop */
+.timeline-item:nth-child(odd) { justify-content: flex-start; }
+.timeline-item:nth-child(even) { justify-content: flex-end; }
+
+@media (max-width: 768px) {
+    .city-timeline::before { left: 20px; }
+    .timeline-dot { left: 20px; }
+    .timeline-item { justify-content: flex-start; }
+    .city-card { width: 85% !important; margin-left: 50px !important; }
+}
+</style>
 {% endblock %}
