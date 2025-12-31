@@ -2,8 +2,12 @@ def weather_message(temp, condition):
     cond = condition.lower()
     advice = ""
     
-    if temp < 5:
+    if temp < -15:
+        advice = "E un ger cumplit afara! Evita iesirile neesentiale din casa"
+    elif -15 <= temp < 0:
         advice = "E foarte frig! Geacă groasă, fular și mănuși neapărat. 🥶"
+    elif 0 <= temp < 5:
+        advice = "Scoate geaca de iarna de la naftalina. E rece afara."
     elif 5 <= temp < 15:
         advice = "Destul de răcoare. O jachetă de toamnă sau un palton e ideal. 🧥"
     elif 15 <= temp < 22:
@@ -11,10 +15,10 @@ def weather_message(temp, condition):
     elif 22 <= temp < 30:
         advice = "E cald și bine! Tricou și haine lejere de bumbac. 👕"
     else:
-        advice = "Caniculă! Haine cât mai subțiri, șapcă și multă apă. ☀️"
+        advice = "Caniculă! Haine cât mai subțiri, deschise la culoare, șapcă și multă apă. ☀️"
 
     if "ploaie" in cond or "rain" in cond:
-        advice += " Nu uita umbrela, se anunță stropi! ☔"
+        advice += " Nu uita umbrela, se anunță ploaie! ☔"
     elif "zăpadă" in cond or "snow" in cond:
         advice += " Atenție la polei, ia încălțări cu talpă aderentă! 🥾"
         
