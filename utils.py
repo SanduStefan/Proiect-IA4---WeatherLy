@@ -1,6 +1,14 @@
+def get_uv_advice(uv):
+    if uv <= 2: return "UV scăzut. Totul e sigur."
+    if uv <= 5: return "UV moderat. Poartă ochelari de soare."
+    return "UV ridicat! Aplică cremă cu protecție solară."
+
 def weather_message(temp, condition):
     cond = condition.lower()
     advice = ""
+
+    is_raining = any(x in cond for x in ["rain", "ploaie", "drizzle", "grindina", "shower", "burniță"])
+    rain_advice = " Neapărat ia o umbrelă sau o pelerină!" if is_raining else ""
     
     if temp < -15:
         advice = "E un ger cumplit afara! Evita iesirile neesentiale din casa"
@@ -17,14 +25,7 @@ def weather_message(temp, condition):
     else:
         advice = "Caniculă! Haine cât mai subțiri, deschise la culoare, șapcă și multă apă. ☀️"
 
-    if "ploaie" in cond or "rain" in cond:
-        advice += " Nu uita umbrela, se anunță ploaie! ☔"
-    elif "zăpadă" in cond or "snow" in cond:
+    if "zăpadă" in cond or "snow" in cond:
         advice += " Atenție la polei, ia încălțări cu talpă aderentă! 🥾"
         
-    return advice
-
-def get_uv_advice(uv):
-    if uv <= 2: return "UV scăzut. Totul e sigur."
-    if uv <= 5: return "UV moderat. Poartă ochelari de soare."
-    return "UV ridicat! Aplică cremă cu protecție solară."
+    return advice + rain_advice

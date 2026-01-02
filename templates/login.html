@@ -1,12 +1,44 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card" style="max-width: 400px;">
-    <h1>Autentificare</h1>
-    <form method="POST">
-        <input type="text" name="username" placeholder="Utilizator" class="auth-input" required>
-        <input type="password" name="password" placeholder="Parolă" class="auth-input" required>
-        <button type="submit" class="btn" style="width: 85%; margin-top: 20px;">Intră în cont</button>
-    </form>
-    <p style="margin-top: 15px;">Nu ai cont? <a href="/register" style="color: var(--primary);">Înregistrează-te</a></p>
+<div class="card" id="auth-card" style="max-width: 400px;">
+    <div id="login-section">
+        <h1 id="auth-title">Autentificare</h1>
+        <form method="POST" action="/login">
+            <input type="text" name="username" placeholder="Utilizator" required class="auth-input">
+            <input type="password" name="password" placeholder="Parolă" required class="auth-input">
+            <button type="submit" class="btn" style="width: 100%; margin-top: 20px; background: linear-gradient(to right, #00d2ff, #9d50bb);">
+                Intră în cont
+            </button>
+        </form>
+        <p style="margin-top: 20px;">
+            Nu ai cont? <a href="javascript:void(0)" onclick="showRegister()" style="color: var(--primary); text-decoration: underline;">Înregistrează-te</a>
+        </p>
+    </div>
+
+    <div id="register-section" style="display: none;">
+        <h1 id="auth-title">Înregistrare</h1>
+        <form method="POST" action="/register">
+            <input type="text" name="username" placeholder="Utilizator" required class="auth-input">
+            <input type="password" name="password" placeholder="Parolă" required class="auth-input">
+            <button type="submit" class="btn" style="width: 100%; margin-top: 20px; background: linear-gradient(to right, #9d50bb, #00d2ff);">
+                Creează cont
+            </button>
+        </form>
+        <p style="margin-top: 20px;">
+            Ai deja cont? <a href="javascript:void(0)" onclick="showLogin()" style="color: var(--primary); text-decoration: underline;">Autentifică-te</a>
+        </p>
+    </div>
 </div>
+
+<script>
+    function showRegister() {
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('register-section').style.display = 'block';
+    }
+
+    function showLogin() {
+        document.getElementById('register-section').style.display = 'none';
+        document.getElementById('login-section').style.display = 'block';
+    }
+</script>
 {% endblock %}

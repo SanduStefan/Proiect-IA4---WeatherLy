@@ -1,53 +1,58 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="card">
-    <h1>Vremea în Timp Real</h1>
+    <h1 style="margin-bottom: 20px;">Vremea în Timp Real</h1>
     
-    <form method="POST" class="search-box">
-        <input type="text" name="city" placeholder="Caută un oraș (ex: Paris)..." required class="auth-input" style="width: 60%;">
+    <form method="POST" class="search-box" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+        <input type="text" name="city" placeholder="Caută un oraș (ex: Paris)..." required class="auth-input" style="width: 60%; margin: 0;">
         <button type="submit" class="btn">Caută</button>
     </form>
 
     {% if weather and "error" not in weather %}
     <div style="margin-top: 30px; animation: fadeIn 0.8s ease-out;">
-        <img src="{{ weather.icon }}" width="100" alt="icon">
-        <h2 style="font-size: 56px; margin: 0; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        <img src="{{ weather.icon }}" width="110" alt="icon" style="filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));">
+        
+        <h2 style="font-size: 64px; margin: 10px 0; font-weight: 800; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
             {{ weather.temperature }}°C
         </h2>
-        <h3 style="text-transform: uppercase; letter-spacing: 2px;">{{ city }}</h3>
-        <p style="font-style: italic; color: var(--primary); font-size: 1.2rem;">{{ weather.condition }}</p>
         
-        <div class="stat-item" style="display: inline-block; padding: 15px 30px; margin-top: 15px;">
-            <p><strong>💡 Sfat:</strong> {{ message }}</p>
+        <h3 style="text-transform: uppercase; letter-spacing: 3px; font-weight: 500;">{{ city }}</h3>
+        
+        <p style="font-style: italic; color: var(--primary); font-size: 1.3rem; margin-bottom: 20px;">
+            {{ weather.condition }}
+        </p>
+        
+        <div class="stat-item" style="display: inline-block; padding: 15px 30px; background: rgba(255,255,255,0.05); border-radius: 15px;">
+            <p style="margin: 0;"><strong>💡 Sfat:</strong> {{ message }}</p>
         </div>
         
-        <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
-            <a href="/more_details/{{ city }}" class="btn">
-                <i class="fas fa-chart-line"></i> Detalii & Grafic
+        <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+            <a href="/more_details/{{ city }}" class="btn" style="padding: 12px 25px;">
+                <i class="fas fa-chart-line"></i> Detalii Avansate
             </a>
-            <button class="btn" style="background: var(--accent);" onclick="askBotAbout('{{ city }}')">
-                <i class="fas fa-tshirt"></i> Ce haine port?
-            </button>
         </div>
     </div>
+
     {% elif message %}
-    <div class="stat-item" style="margin-top: 20px; border-color: #ff4d4d;">
-        <p style="color: #ff4d4d;">{{ message }}</p>
+    <div class="stat-item" style="margin-top: 20px; border-color: #ff4d4d; background: rgba(255, 77, 77, 0.1);">
+        <p style="color: #ff4d4d; margin: 0;"><i class="fas fa-exclamation-circle"></i> {{ message }}</p>
     </div>
     {% endif %}
 </div>
 
-<script>
-function askBotAbout(cityName) {
-    const widget = document.getElementById('chat-widget');
-    const input = document.getElementById('user-input');
-    
-    if (widget.classList.contains('chat-closed')) {
-        toggleChat();
-    }
-    
-    input.value = `Ce haine sa iau in ${cityName}?`;
-    sendMessage(); // Trimite automat mesajul către bot
+<style>
+/* Animație pentru apariția conținutului */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-</script>
+
+/* Stil pentru input-ul din index (asigură contrastul negru pe alb) */
+.auth-input {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid var(--primary);
+    font-weight: 600;
+}
+</style>
 {% endblock %}

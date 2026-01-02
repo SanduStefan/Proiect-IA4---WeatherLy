@@ -28,9 +28,8 @@ with app.app_context():
 def get_bg_video(condition):
     cond = condition.lower() if condition else ""
     if any(x in cond for x in ["fog", "ceață", "mist"]): return "fog.mp4"
-    if any(x in cond for x in ["însorit", "soare", "sunny"]): return "sun.mp4"
-    if any(x in cond for x in ["senin", "clear"]): return "clear.mp4"
-    if any(x in cond for x in ["rain", "ploaie", "drizzle"]): return "rain.mp4"
+    if any(x in cond for x in ["senin", "clear", "soare", "sunny"]): return "sun.mp4"
+    if any(x in cond for x in ["rain", "ploaie", "drizzle", "burniță"]): return "rain.mp4"
     if any(x in cond for x in ["cloud", "nor", "acoperit"]): return "cloud.mp4"
     if any(x in cond for x in ["snow", "zapada", "ninsori"]): return "snow.mp4"
     return "default.mp4"
@@ -40,46 +39,47 @@ def index():
     if request.method == "POST":
         city = request.form.get("city")
     else:
-        # Oraș preferat dacă e logat, altfel București
-        if current_user.is_authenticated:
-            city = current_user.favorite_city
-        else:
-            city = "Bucharest"
+        city = current_user.favorite_city if current_user.is_authenticated else "Bucharest"
 
     w = get_weather(city)
     bg = get_bg_video(w.get("condition", ""))
     msg = weather_message(w.get("temperature", 20), w.get("condition", "")) if "error" not in w else w.get("error")
-    
     return render_template("index.html", weather=w, city=city, message=msg, bg_video=bg)
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        
-        if User.query.filter_by(username=username).first():
-            return render_template("register.html", error="Utilizatorul există deja.", bg_video="default.mp4")
-            
-        hashed_pw = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(username=username, password=hashed_pw, favorite_city="Bucharest")
-        
-        db.session.add(new_user)
-        db.session.commit()
-        
-        login_user(new_user)
+# RUTA CORECTATĂ PENTRU DETALII
+@app.route("/more_details/<city>")
+def more_details(city):
+    w = get_weather(city)
+    if "error" in w:
         return redirect(url_for('index'))
-    return render_template("register.html", bg_video="default.mp4")
+    
+    bg = get_bg_video(w.get("condition", ""))
+    advice = get_uv_advice(w.get("uv", 0))
+    # Simulare istoric temperaturi pentru grafic
+    temp_history = [w['temperature']-2, w['temperature']-1, w['temperature']+2, w['temperature']+3, w['temperature']+1, w['temperature']-1, w['temperature']]
+    
+    return render_template("more_details.html", 
+                           weather=w, 
+                           city=city, 
+                           uv_advice=advice, 
+                           bg_video=bg, 
+                           temp_history=temp_history)
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        user = User.query.filter_by(username=request.form['username']).first()
-        if user and check_password_hash(user.password, request.form['password']):
-            login_user(user)
-            return redirect(url_for('index'))
-        return render_template("login.html", error="Date de autentificare invalide.", bg_video="default.mp4")
-    return render_template("login.html", bg_video="default.mp4")
+@app.route("/popular_cities")
+def popular_cities():
+    regions = ["Europa", "Asia", "America", "Africa & Altele"]
+    categorized = {}
+    for r in regions:
+        if r == "Africa & Altele":
+            cities = [d["name"] for d in DESTINATIONS if d.get("region") not in ["Europa", "Asia", "America"]]
+        else:
+            cities = [d["name"] for d in DESTINATIONS if d.get("region") == r]
+        if cities: categorized[r] = sorted(cities)
+    return render_template("popular_cities.html", categorized=categorized, bg_video="city.mp4")
+
+@app.route("/minigame")
+def minigame():
+    return render_template("minigame.html", bg_video="games.mp4")
 
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
@@ -91,7 +91,40 @@ def settings():
         current_user.interests = request.form.get("interests")
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template("settings.html", bg_video="default.mp4")
+    return render_template("settings.html", bg_video="login.mp4")
+
+@app.route("/api/chat", methods=["POST"])
+def chat_api():
+    data = request.json
+    profile = {"interests": current_user.interests} if current_user.is_authenticated else {}
+    current_city = data.get("city", "")
+    user_msg = data.get("message", "")
+    full_prompt = f"Sunt în {current_city}. {user_msg}" if current_city else user_msg
+    return jsonify({"response": get_chatbot_response(full_prompt, user_profile=profile)})
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if User.query.filter_by(username=username).first():
+            return render_template("register.html", error="Utilizator existent", bg_video="default.mp4")
+        hashed_pw = generate_password_hash(password, method='pbkdf2:sha256')
+        new_user = User(username=username, password=hashed_pw, favorite_city="Bucharest")
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+        return redirect(url_for('index'))
+    return render_template("register.html", bg_video="login.mp4")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user and check_password_hash(user.password, request.form['password']):
+            login_user(user)
+            return redirect(url_for('index'))
+    return render_template("login.html", bg_video="login.mp4")
 
 @app.route("/about")
 def about():
@@ -102,44 +135,6 @@ def about():
 def logout():
     logout_user()
     return redirect(url_for('index'))
-
-@app.route("/more_details/<city>")
-def more_details(city):
-    w = get_weather(city)
-    bg = get_bg_video(w.get("condition", ""))
-    advice = get_uv_advice(w.get("uv", 0))
-    temp_history = [w['temperature']-2, w['temperature']-1, w['temperature']+2, w['temperature']+3, w['temperature']+1, w['temperature']-1, w['temperature']]
-    return render_template("more_details.html", weather=w, city=city, uv_advice=advice, bg_video=bg, temp_history=temp_history)
-
-@app.route("/popular_cities")
-def popular_cities():
-    # Sortăm și grupăm orașele pe continente
-    regions = ["Europa", "Asia", "America", "Africa & Altele"]
-    categorized = {}
-    
-    for r in regions:
-        if r == "Africa & Altele":
-            cities_in_reg = [d["name"] for d in DESTINATIONS if d.get("region") not in ["Europa", "Asia", "America"]]
-        else:
-            cities_in_reg = [d["name"] for d in DESTINATIONS if d.get("region") == r]
-        
-        if cities_in_reg:
-            categorized[r] = sorted(cities_in_reg)
-
-    return render_template("popular_cities.html", categorized=categorized, bg_video="city.mp4")
-
-@app.route("/api/chat", methods=["POST"])
-def chat_api():
-    data = request.json
-    user_msg = data.get("message", "")
-    current_city = data.get("city", "")
-    
-    full_prompt = user_msg
-    if current_city:
-        full_prompt = f"Sunt în {current_city}. {user_msg}"
-        
-    response = get_chatbot_response(full_prompt)
-    return jsonify({"response": response})
 
 if __name__ == "__main__":
     app.run(debug=True)
