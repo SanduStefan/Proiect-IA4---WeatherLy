@@ -28,8 +28,9 @@ with app.app_context():
 def get_bg_video(condition):
     cond = condition.lower() if condition else ""
     if any(x in cond for x in ["fog", "ceață", "mist"]): return "fog.mp4"
-    if any(x in cond for x in ["senin", "clear", "soare", "sunny"]): return "sun.mp4"
-    if any(x in cond for x in ["rain", "ploaie", "drizzle", "burniță"]): return "rain.mp4"
+    if any(x in cond for x in ["soare", "sunny", "însorit"]): return "sun.mp4"
+    if any(x in cond for x in ["senin", "clear"]): return "clear.mp4"
+    if any(x in cond for x in ["rain", "ploaie", "drizzle", "burniță", "ploi"]): return "rain.mp4"
     if any(x in cond for x in ["cloud", "nor", "acoperit"]): return "cloud.mp4"
     if any(x in cond for x in ["snow", "zapada", "ninsori"]): return "snow.mp4"
     return "default.mp4"
