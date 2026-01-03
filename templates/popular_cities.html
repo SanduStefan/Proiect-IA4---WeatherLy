@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="padding-top: 40px;">
+    <div class="card" style="max-width: 800px; margin-bottom: 60px;">
+        <h1>Destinații <span style="color: var(--primary);">Globale</span></h1>
+        <p>Orașele tale preferate, organizate pe continente.</p>
+    </div>
+
+    <div class="city-timeline">
+        {% for continent, cities in categorized.items() %}
+            <div class="timeline-category-header">
+                <span class="category-label">{{ continent }}</span>
+            </div>
+
+            {% for city in cities %}
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="card city-card">
+                    <h3>{{ city }}</h3>
+                    <form action="/" method="POST">
+                        <input type="hidden" name="city" value="{{ city }}">
+                        <button type="submit" class="btn">Vezi Vremea</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.city-timeline { position: relative; max-width: 900px; margin: 0 auto; padding-bottom: 100px; }
+
+
+.city-timeline::before {
+    content: ''; position: absolute; left: 50%; width: 3px; height: 100%;
+    background: linear-gradient(to bottom, var(--primary), var(--accent), var(--primary));
+    transform: translateX(-50%); z-index: 0;
+}
+
+.timeline-category-header {
+    position: relative; width: 100%; text-align: center; margin: 50px 0; z-index: 1;
+}
+
+.category-label {
+    background: linear-gradient(45deg, var(--primary), var(--accent));
+    padding: 10px 30px; border-radius: 20px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+.timeline-item {
+    position: relative; width: 100%; margin-bottom: 40px;
+    display: flex; justify-content: center; z-index: 1;
+}
+
+
+.city-card {
+    width: 40% !important; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+.city-card:hover {
+    transform: translateY(-15px) scale(1.05) !important;
+    box-shadow: 0 15px 30px rgba(0,210,255,0.4) !important;
+    border-color: var(--primary) !important;
+}
+
+.timeline-dot {
+    position: absolute; left: 50%; top: 50%; width: 16px; height: 16px;
+    background: white; border: 3px solid var(--primary); border-radius: 50%;
+    transform: translate(-50%, -50%); z-index: 2;
+}
+
+.timeline-item:nth-child(odd) { justify-content: flex-start; }
+.timeline-item:nth-child(even) { justify-content: flex-end; }
+
+@media (max-width: 768px) {
+    .city-timeline::before { left: 20px; }
+    .timeline-dot { left: 20px; }
+    .timeline-item { justify-content: flex-start; }
+    .city-card { width: 85% !important; margin-left: 50px !important; }
+    .timeline-category-header { text-align: left; padding-left: 45px; }
+}
+</style>
+{% endblock %}

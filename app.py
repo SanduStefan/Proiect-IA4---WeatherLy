@@ -1,250 +1,218 @@
-from flask import Flask, render_template, request, redirect, url_for
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User
-import requests
+
+from auth import db, User
+from weather_data import get_weather
+from utils import weather_message, get_uv_advice, get_continent
+from chatbot import get_chatbot_response
+from city_manager import DESTINATIONS, TOP_CITIES
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "super-secret-key"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.secret_key = "weatherly_secret_key_123"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///weatherly.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
-
 login_manager = LoginManager()
+login_manager.login_view = 'login'
 login_manager.init_app(app)
-login_manager.login_view = "login"
-
-API_TOKEN = "714bf56178b24ab6aef210524250511"
-API_URL = "https://api.weatherapi.com/v1/forecast.json"
-
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+with app.app_context():
+    db.create_all()
 
-def weather_message(temp, condition):
-    c = condition.lower()
-    if "rain" in c or "ploaie" in c:
-        return "Ia umbrela cu tine ☔"
-    elif "snow" in c:
-        return "Prea frig, pregătește sania! ❄️"
-    elif temp > 30:
-        return "Nu uita crema de soare! ☀️"
-    elif temp > 20:
-        return "O zi perfectă pentru plimbare! 🌤️"
-    elif temp >= 10:
-        return "Temperatură plăcută 🙂"
-    else:
-        return "Îmbracă-te bine! 🧥"
-
+def get_bg_video(condition):
+    cond = condition.lower() if condition else ""
+    if any(x in cond for x in ["fog", "ceață", "mist"]): return "fog.mp4"
+    if any(x in cond for x in ["soare", "sunny", "însorit"]): return "sun.mp4"
+    if any(x in cond for x in ["senin", "clear"]): return "clear.mp4"
+    if any(x in cond for x in ["rain", "ploaie", "drizzle", "burniță", "ploi"]): return "rain.mp4"
+    if any(x in cond for x in ["cloud", "nor", "acoperit"]): return "cloud.mp4"
+    if any(x in cond for x in ["snow", "zapada", "ninsori"]): return "snow.mp4"
+    return "default.mp4"
 
 @app.route("/", methods=["GET", "POST"])
-def home():
-    city = ""
-    weather = {}
-    message = ""
-
-    hourly_temps = []
-    hourly_wind = []
-    hourly_humidity = []
-    hour_labels = []
-
-    daily_labels = []
-    daily_max = []
-    daily_min = []
-
+def index():
     if request.method == "POST":
         city = request.form.get("city")
+    else:
+        city = current_user.favorite_city if current_user.is_authenticated else "Bucharest"
 
-        try:
-            response = requests.get(
-                API_URL,
-                params={
-                    "key": API_TOKEN,
-                    "q": city,
-                    "days": 3,  
-                    "aqi": "no",
-                    "alerts": "no"
-                }
-            )
+    w = get_weather(city)
+    bg = get_bg_video(w.get("condition", ""))
 
-            data = response.json()
+    msg = weather_message(w.get("temperature", 20), w.get("condition", "")) if "error" not in w else w.get("error")
 
-            weather = {
-                "temperature": data["current"]["temp_c"],
-                "condition": data["current"]["condition"]["text"],
-                "humidity": data["current"]["humidity"],
-                "uv": data["current"]["uv"],
-                "wind_kph": data["current"]["wind_kph"],
-                "feelslike_c": data["current"]["feelslike_c"],
-                "pressure": data["current"]["pressure_mb"],
-                "visibility": data["current"]["vis_km"],
-                "lat": data["location"]["lat"],   
-                "lon": data["location"]["lon"]
-            }
-
-            hourly_data = data["forecast"]["forecastday"][0]["hour"]
-            hourly_temps = [h["temp_c"] for h in hourly_data]
-            hourly_wind = [h["wind_kph"] for h in hourly_data]
-            hourly_humidity = [h["humidity"] for h in hourly_data]
-            hour_labels = [h["time"].split(" ")[1] for h in hourly_data]
-
-       
-            for day in data["forecast"]["forecastday"]:
-                daily_labels.append(day["date"])
-                daily_max.append(day["day"]["maxtemp_c"])
-                daily_min.append(day["day"]["mintemp_c"])
-
-            message = weather_message(weather["temperature"], weather["condition"])
-
-        except Exception:
-            weather = {"error": "Oraș invalid sau eroare API"}
+    continent = None
+    if w and "lat" in w and "lon" in w and w["lat"] is not None and w["lon"] is not None:
+        continent = get_continent(w["lat"], w["lon"])
 
     return render_template(
         "index.html",
+        weather=w,
         city=city,
-        weather=weather,
-        message=message,
-        hourly_temps=hourly_temps,
-        hourly_wind=hourly_wind,
-        hourly_humidity=hourly_humidity,
-        hour_labels=hour_labels,
-        daily_labels=daily_labels,
-        daily_max=daily_max,
-        daily_min=daily_min
+        message=msg,
+        bg_video=bg,
+        continent=continent
     )
 
+@app.route("/more_details/<city>")
+def more_details(city):
+    w = get_weather(city)
+    if "error" in w:
+        return redirect(url_for('index'))
 
-@app.route("/add_favorite", methods=["POST"])
+  
+    continent = get_continent(w.get("lat"), w.get("lon")) if w.get("lat") and w.get("lon") else None
+
+    bg = get_bg_video(w.get("condition", ""))
+    advice = get_uv_advice(w.get("uv", 0))
+
+    temp_history = [
+        w["temperature"] - 2,
+        w["temperature"] - 1,
+        w["temperature"],
+        w["temperature"] + 1,
+        w["temperature"] + 2,
+        w["temperature"] + 1,
+        w["temperature"]
+    ]
+
+    daily_min = [w.get("temp_min", w["temperature"] - 3)]
+    daily_max = [w.get("temp_max", w["temperature"] + 3)]
+    hour_labels = ["00:00", "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00"]
+
+    hourly_temps = [
+        w["temperature"] - 2,
+        w["temperature"] - 1,
+        w["temperature"],
+        w["temperature"] + 1,
+        w["temperature"] + 2,
+        w["temperature"] + 1,
+        w["temperature"],
+        w["temperature"] - 1
+    ]
+
+    hourly_feelslike = [
+        w.get("feelslike_c", w["temperature"]) - 2,
+        w.get("feelslike_c", w["temperature"]) - 1,
+        w.get("feelslike_c", w["temperature"]),
+        w.get("feelslike_c", w["temperature"]) + 1,
+        w.get("feelslike_c", w["temperature"]) + 2,
+        w.get("feelslike_c", w["temperature"]) + 1,
+        w.get("feelslike_c", w["temperature"]),
+        w.get("feelslike_c", w["temperature"]) - 1
+    ]
+
+    hourly_wind = [
+        w["wind_kph"] - 2,
+        w["wind_kph"],
+        w["wind_kph"] + 1,
+        w["wind_kph"] + 2,
+        w["wind_kph"],
+        w["wind_kph"] - 1,
+        w["wind_kph"] - 2,
+        w["wind_kph"]
+    ]
+
+    hourly_humidity = [w["humidity"]] * 8
+    hourly_precip = [0, 0, 0.2, 0.5, 0.3, 0, 0, 0]
+
+    return render_template(
+        "more_details.html",
+        weather=w,
+        city=city,
+        continent=continent,
+        uv_advice=advice,
+        bg_video=bg,
+        temp_history=temp_history,
+        daily_min=daily_min,
+        daily_max=daily_max,
+        hour_labels=hour_labels,
+        hourly_temps=hourly_temps,
+        hourly_feelslike=hourly_feelslike,
+        hourly_wind=hourly_wind,
+        hourly_humidity=hourly_humidity,
+        hourly_precip=hourly_precip
+    )
+
+@app.route("/popular_cities")
+def popular_cities():
+    regions = ["Europa", "Asia", "America", "Africa & Altele"]
+    categorized = {}
+    for r in regions:
+        if r == "Africa & Altele":
+            cities = [d["name"] for d in DESTINATIONS if d.get("region") not in ["Europa", "Asia", "America"]]
+        else:
+            cities = [d["name"] for d in DESTINATIONS if d.get("region") == r]
+        if cities: categorized[r] = sorted(cities)
+    return render_template("popular_cities.html", categorized=categorized, bg_video="city.mp4")
+
+@app.route("/minigame")
+def minigame():
+    return render_template("minigame.html", bg_video="games.mp4")
+
+@app.route("/settings", methods=["GET", "POST"])
 @login_required
-def add_favorite():
-    city = request.form.get("city")
-    if city:
-        favorites = current_user.favorite_cities
-        if city not in favorites:
-            favorites.append(city)
-            current_user.favorite_cities = favorites
-            db.session.commit()
-    return redirect(url_for("home"))
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
+def settings():
     if request.method == "POST":
-        user = User.query.filter_by(username=request.form["username"]).first()
-        if user and check_password_hash(user.password_hash, request.form["password"]):
-            login_user(user)
-            return redirect(url_for("home"))
-    return render_template("login.html")
+        current_user.favorite_city = request.form.get("fav_city")
+        current_user.other_cities = request.form.get("other_cities")
+        current_user.fav_destinations = request.form.get("fav_destinations")
+        current_user.interests = request.form.get("interests")
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_template("settings.html", bg_video="login.mp4")
 
+
+@app.route("/api/chat", methods=["POST"])
+def chat_api():
+    data = request.json
+    profile = {"interests": current_user.interests} if current_user.is_authenticated else {}
+    current_city = data.get("city", "")
+    user_msg = data.get("message", "")
+    full_prompt = f"Sunt în {current_city}. {user_msg}" if current_city else user_msg
+    return jsonify({"response": get_chatbot_response(full_prompt, user_profile=profile)})
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        if not User.query.filter_by(username=request.form["username"]).first():
-            user = User(
-                username=request.form["username"],
-                password_hash=generate_password_hash(request.form["password"])
-            )
-            db.session.add(user)
-            db.session.commit()
-            login_user(user)
-            return redirect(url_for("home"))
-    return render_template("register.html")
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if User.query.filter_by(username=username).first():
+            return render_template("register.html", error="Utilizator existent", bg_video="default.mp4")
+        hashed_pw = generate_password_hash(password, method='pbkdf2:sha256')
+        new_user = User(username=username, password=hashed_pw, favorite_city="Bucharest")
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+        return redirect(url_for('index'))
+    return render_template("register.html", bg_video="login.mp4")
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user and check_password_hash(user.password, request.form['password']):
+            login_user(user)
+            return redirect(url_for('index'))
+    return render_template("login.html", bg_video="login.mp4")
+
+@app.route("/about")
+def about():
+    return render_template("about_us.html", bg_video="default.mp4")
 
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("home"))
-
-
-@app.route("/about")
-def about():
-    return render_template("about.html")
-
-@app.route("/metrics")
-def metric_data():
-    city = "Bucharest"
-
-    hourly_temps = []
-    hourly_wind = []
-    hourly_humidity = []
-    hourly_uv = []
-    hour_labels = []
-
-    daily_labels = []
-    daily_max = []
-    daily_min = []
-    daily_precip = []
-    daily_wind_avg = []
-    daily_cloud = []
-
-    try:
-        response = requests.get(
-            API_URL,
-            params={"key": API_TOKEN, "q": city, "days": 3, "aqi": "no", "alerts": "no"}
-        )
-        data = response.json()
-
-        metrics = {
-            "location": data["location"]["name"],
-            "country": data["location"]["country"],
-            "temp_c": data["current"]["temp_c"],
-            "feelslike_c": data["current"]["feelslike_c"],
-            "condition": data["current"]["condition"]["text"],
-            "humidity": data["current"]["humidity"],
-            "wind_kph": data["current"]["wind_kph"],
-            "wind_dir": data["current"]["wind_dir"],
-            "pressure_mb": data["current"]["pressure_mb"],
-            "uv": data["current"]["uv"],
-            "cloud": data["current"]["cloud"],
-            "precip_mm": data["current"]["precip_mm"],
-            "visibility_km": data["current"]["vis_km"]
-        }
-
-        hourly_data = data["forecast"]["forecastday"][0]["hour"]
-        for h in hourly_data:
-            hour_labels.append(h["time"].split(" ")[1])
-            hourly_temps.append(h["temp_c"])
-            hourly_wind.append(h["wind_kph"])
-            hourly_humidity.append(h["humidity"])
-            hourly_uv.append(h["uv"])
-
-        for day in data["forecast"]["forecastday"]:
-            daily_labels.append(day["date"])
-            daily_max.append(day["day"]["maxtemp_c"])
-            daily_min.append(day["day"]["mintemp_c"])
-            daily_precip.append(day["day"]["totalprecip_mm"])
-            daily_wind_avg.append(day["day"]["maxwind_kph"])
-            daily_cloud.append(day["day"]["avgvis_km"])  
-
-    except Exception as e:
-        metrics = {"error": str(e)}
-
-    return render_template(
-        "metric_data.html",
-        metrics=metrics,
-        hourly_temps=hourly_temps,
-        hourly_wind=hourly_wind,
-        hourly_humidity=hourly_humidity,
-        hourly_uv=hourly_uv,
-        hour_labels=hour_labels,
-        daily_labels=daily_labels,
-        daily_max=daily_max,
-        daily_min=daily_min,
-        daily_precip=daily_precip,
-        daily_wind_avg=daily_wind_avg,
-        daily_cloud=daily_cloud
-    )
-
+    return redirect(url_for('index'))
 
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-        print(" ---> users.db creat / actualizat (user database up to date)")
     app.run(debug=True)

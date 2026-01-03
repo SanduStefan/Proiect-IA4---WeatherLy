@@ -1,58 +1,44 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <link rel="icon" href="{{ url_for('static', filename='images/favicon.PNG') }}" type="image/png">
-    <meta charset="UTF-8">
-    <title>Register - WeatherLy</title>
-    <style>
-        body {
-            background: linear-gradient(to right, #4a90e2, #50e3c2);
-            font-family: Arial;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .card {
-            background: rgba(0,0,0,0.5);
-            padding: 30px;
-            border-radius: 15px;
-            width: 300px;
-            text-align: center;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: none;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            background: #1a73e8;
-            color: #fff;
-            cursor: pointer;
-        }
-        a { color: #90ee90; }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
+<div class="card" id="auth-card" style="max-width: 400px;">
+    <div id="login-section">
+        <h1 id="auth-title">Autentificare</h1>
+        <form method="POST" action="/login">
+            <input type="text" name="username" placeholder="Utilizator" required class="auth-input">
+            <input type="password" name="password" placeholder="Parolă" required class="auth-input">
+            <button type="submit" class="btn" style="width: 100%; margin-top: 20px; background: linear-gradient(to right, #00d2ff, #9d50bb);">
+                Intră în cont
+            </button>
+        </form>
+        <p style="margin-top: 20px;">
+            Nu ai cont? <a href="javascript:void(0)" onclick="showRegister()" style="color: var(--primary); text-decoration: underline;">Înregistrează-te</a>
+        </p>
+    </div>
 
-<div class="card">
-    <h2>Register</h2>
-
-    <form method="POST">
-    <input name="username" placeholder="Username" required>
-    <input name="password" type="password" placeholder="Parola" required>
-    <button type="submit">Register</button>
-    <p>Ai deja cont? <a href="{{ url_for('login') }}">Login</a></p>
-</form>
-
+    <div id="register-section" style="display: none;">
+        <h1 id="auth-title">Înregistrare</h1>
+        <form method="POST" action="/register">
+            <input type="text" name="username" placeholder="Utilizator" required class="auth-input">
+            <input type="password" name="password" placeholder="Parolă" required class="auth-input">
+            <button type="submit" class="btn" style="width: 100%; margin-top: 20px; background: linear-gradient(to right, #9d50bb, #00d2ff);">
+                Creează cont
+            </button>
+        </form>
+        <p style="margin-top: 20px;">
+            Ai deja cont? <a href="javascript:void(0)" onclick="showLogin()" style="color: var(--primary); text-decoration: underline;">Autentifică-te</a>
+        </p>
+    </div>
 </div>
 
-</body>
-</html>
+<script>
+    function showRegister() {
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('register-section').style.display = 'block';
+    }
+
+    function showLogin() {
+        document.getElementById('register-section').style.display = 'none';
+        document.getElementById('login-section').style.display = 'block';
+    }
+</script>
+{% endblock %}
