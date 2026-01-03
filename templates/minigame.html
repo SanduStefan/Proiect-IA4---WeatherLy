@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width: 800px; overflow: hidden;">
+    <h1>Sun vs Rain: <span id="score">0</span></h1>
+    <p id="game-status">Colecteaza ✨ și fereste-te de 🌧️!</p>
+    
+    <div id="game-container" style="position: relative; width: 100%; height: 400px; background: rgba(0,0,0,0.3); border-radius: 15px; overflow: hidden; border: 2px solid var(--primary); margin-top: 20px;">
+        <div id="player" style="position: absolute; bottom: 10px; left: 50%; font-size: 40px; transition: 0.1s; transform: translateX(-50%);">☀️</div>
+    </div>
+    
+    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+        <button id="start-btn" onclick="startGame()" class="btn">Start Joc</button>
+        <a href="/" class="btn" style="background: var(--accent); text-decoration: none;">Înapoi</a>
+    </div>
+</div>
+
+<script>
+    let score = 0;
+    let gameActive = false;
+    let spawnTimer;
+    const player = document.getElementById('player');
+    const container = document.getElementById('game-container');
+    const statusText = document.getElementById('game-status');
+    let playerPos = 50;
+
+    function startGame() {
+        if(gameActive) return;
+        
+        // Resetare joc
+        gameActive = true;
+        score = 0;
+        playerPos = 50;
+        document.getElementById('score').innerText = score;
+        statusText.innerText = "Mult succes! Aduna 150 de puncte ca sa invingi furtuna(-30 = potop)!";
+        statusText.style.color = "white";
+        document.getElementById('start-btn').innerText = "Restart";
+        
+        spawnItem();
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if(!gameActive) return;
+        if(e.key === 'ArrowLeft' && playerPos > 5) playerPos -= 7;
+        if(e.key === 'ArrowRight' && playerPos < 95) playerPos += 7;
+        player.style.left = playerPos + '%';
+    });
+
+    function spawnItem() {
+        if(!gameActive) return;
+
+        const item = document.createElement('div');
+        const isGood = Math.random() > 0.4;
+        item.innerText = isGood ? '✨' : '🌧️';
+        item.style.position = 'absolute';
+        item.style.top = '0px';
+        item.style.left = Math.random() * 90 + 5 + '%';
+        item.style.fontSize = '30px';
+        item.style.zIndex = "5";
+        container.appendChild(item);
+
+        let fallInterval = setInterval(() => {
+            if(!gameActive) {
+                clearInterval(fallInterval);
+                item.remove();
+                return;
+            }
+
+            let top = parseInt(item.style.top) || 0;
+            
+            // Verificare coliziune când obiectul ajunge la nivelul jucătorului
+            if(top > 340 && top < 380) {
+                const itemLeft = parseFloat(item.style.left);
+                if(Math.abs(itemLeft - playerPos) < 8) {
+                    if(isGood) {
+                        score += 10;
+                        player.innerText = '😎';
+                        setTimeout(() => player.innerText = '☀️', 200);
+                    } else {
+                        score -= 15;
+                        player.innerText = '😵';
+                        setTimeout(() => player.innerText = '☀️', 200);
+                    }
+                    document.getElementById('score').innerText = score;
+                    checkGameStatus();
+                    clearInterval(fallInterval);
+                    item.remove();
+                }
+            }
+
+            // Eliminare obiect dacă iese din ecran
+            if(top > 400) {
+                clearInterval(fallInterval);
+                item.remove();
+            }
+
+            item.style.top = (top + 5) + 'px';
+        }, 30);
+
+        // următorul obiect
+        spawnTimer = setTimeout(spawnItem, 700);
+    }
+
+    function checkGameStatus() {
+        if (score >= 150) {
+            endGame("VICTORIE! 🎉 Ai învins ploaia, acum te poti bucura de o zi la plaja!", "#00ff00");
+        } else if (score <= -30) {
+            endGame("GAME OVER! ⛈️ Te-a prins furtuna, pune-ti hainele la uscat!", "#ff4d4d");
+        }
+    }
+
+    function endGame(message, color) {
+        gameActive = false;
+        clearTimeout(spawnTimer);
+        statusText.innerText = message;
+        statusText.style.color = color;
+        player.innerText = (score >= 150) ? '👑' : '💀';
+        
+        // Ștergem obiectele rămase pe ecran
+        const items = container.querySelectorAll('div:not(#player)');
+        items.forEach(i => i.remove());
+    }
+</script>
+{% endblock %}

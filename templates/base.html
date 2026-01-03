@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherLy - Smart Travel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;800&display=swap" rel="stylesheet">
+
+    <!--- favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/favricon.PNG') }}" type="image/png">
+
+
+    <style>
+        body.dark-mode { background-color: #0a0a0b !important; color: #e0e0e0; }
+        
+        .game-container-float {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 999;
+        }
+
+        .game-label {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .game-float-btn {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, var(--accent), var(--primary));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            text-decoration: none;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .game-float-btn:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 15px 25px rgba(0, 210, 255, 0.5);
+        }
+
+            .coords-box {
+        list-style: none;
+        padding: 6px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--primary);
+        background: rgba(255,255,255,0.08);
+        font-family: 'Courier New', monospace;
+        font-size: 0.85em;
+        letter-spacing: 0.6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        color: var(--text);
+    }
+
+    .coords-box strong {
+        color: var(--primary);
+    }
+
+    .coords-box .dot {
+        opacity: 0.4;
+    }
+
+    </style>
+</head>
+<body>
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="{{ url_for('static', filename='videos/' + (bg_video if bg_video else 'default.mp4')) }}" type="video/mp4">
+    </video>
+
+    <nav class="navbar">
+        <div class="logo-wrapper">
+            <div class="logo-icon">⛅</div>
+            <div class="logo-text-group">
+                <a href="/" class="logo" style="padding:0; background:none; text-decoration: none;">WeatherLy</a>
+                <div class="typing-sub">Rain or sun, we got you covered...</div>
+            </div>
+        </div>
+
+        <ul class="nav-links">
+
+            {% if continent %}
+    <li class="coords-box">
+        🌎 <strong>CONTINENT</strong> {{ continent }}
+    </li>
+    {% endif %}
+             {% if city and weather.lat and weather.lon %}
+        <li class="coords-box">
+            📍 <strong>LAT</strong> {{ "%.4f"|format(weather.lat) }}
+            <span class="dot">•</span>
+            🧭 <strong>LON</strong> {{ "%.4f"|format(weather.lon) }}
+        </li>
+        {% endif %}
+
+            <li>
+                <button onclick="toggleDarkMode()" class="btn" id="dark-btn" style="background:none; border:1px solid var(--primary); padding: 5px 12px; cursor: pointer;">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </li>
+            <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/popular_cities"><i class="fas fa-city"></i> Orașe</a></li>
+            <li><a href="/about"><i class="fas fa-info-circle"></i> Despre</a></li>
+
+            {% if current_user.is_authenticated %}
+                <li><a href="/settings" style="color: var(--primary);"><i class="fas fa-user-cog"></i> Profil</a></li>
+                <li><a href="/logout" style="color: var(--accent); font-weight: bold;">Logout ({{ current_user.username }})</a></li>
+            {% else %}
+                <li><a href="/login" class="btn">Login</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <div class="game-container-float">
+        <div class="game-label">WeatherGame</div>
+        <a href="/minigame" class="game-float-btn">
+            <i class="fas fa-gamepad"></i>
+        </a>
+    </div>
+
+    <div id="chat-widget" class="chat-closed">
+        <div id="chat-header" onclick="toggleChat()">
+            <span><i class="fas fa-robot"></i> WeatherBot</span>
+            <i id="chat-icon" class="fas fa-chevron-up"></i>
+        </div>
+        <div id="chat-content">
+            <div id="chat-box"></div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="Scrie aici..." onkeydown="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="btn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkModeStatus = localStorage.getItem('darkMode');
+            if (darkModeStatus === 'enabled') document.body.classList.add('dark-mode');
+            
+         const chatBox = document.getElementById('chat-box');
+    let welcomeMessages = [];
+
+    {% if current_user.is_authenticated %}
+        welcomeMessages = [
+            `Salut, <b>{{ current_user.username }}</b>! Bine ai revenit. Cu ce te pot ajuta astăzi?`,
+            "Scrie 'opțiuni' sau 'help' pentru ajutor! Scrie 'info orașe' pentru date despre orașele disponibile!"
+        ];
+    {% else %}
+        welcomeMessages = [
+            "Bună! Eu sunt asistentul tău WeatherLy. Te pot ajuta cu bagajul, recomandări de vacanță sau orice despre vreme!",
+            "Scrie 'opțiuni' sau 'help' pentru ajutor! Scrie 'info orașe' pentru date despre orașele disponibile!"
+        ];
+    {% endif %}
+
+    chatBox.innerHTML = welcomeMessages.map(msg => `<div class="msg bot">${msg}</div>`).join("");
+        });
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
+        }
+
+        function toggleChat() {
+            const widget = document.getElementById('chat-widget');
+            const icon = document.getElementById('chat-icon');
+            widget.classList.toggle('chat-closed');
+            widget.classList.toggle('chat-open');
+            icon.classList.toggle('fa-chevron-up');
+            icon.classList.toggle('fa-chevron-down');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            const message = input.value.trim();
+            if (!message) return;
+
+            chatBox.innerHTML += `<div class="msg user">${message}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, city: "{{ city if city else '' }}" })
+                });
+                const data = await response.json();
+                chatBox.innerHTML += `<div class="msg bot">${data.response}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                console.error('Eroare chat:', error);
+            }
+        }
+    </script>
+    
+</body>
+</html>

@@ -1,582 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="icon" href="{{ url_for('static', filename='images/favicon.PNG') }}" type="image/png">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h1 style="margin-bottom: 20px;">Vremea în Timp Real</h1>
+    
+   <form method="POST" class="search-box" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+    <input type="text" name="city" placeholder="Caută un oraș..." required class="auth-input" style="width: 60%; margin: 0;" id="cityInput">
+    <button type="submit" class="btn">Caută</button>
+</form>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-
-    <meta charset="UTF-8">
-    <title>WeatherLy</title>
-
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right,#4a90e2,#50e3c2);
-            color: #fff;
-        }
-
-   
-        .navbar {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 18px 45px;
-            background: rgba(0,0,0,0.35);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 10px 35px rgba(0,0,0,0.4);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.4em;
-            font-weight: bold;
-        }
-
-        .logo span {
-            font-size: 1.8em;
-            filter: drop-shadow(0 0 6px rgba(255,255,255,0.6));
-        }
-
-        .typewriter {
-            font-size: 0.95em;
-            opacity: 0.85;
-            white-space: nowrap;
-            overflow: hidden;
-            border-right: 2px solid rgba(255,255,255,0.8);
-        }
-
-        .menu-buttons {
-            display: flex;
-            gap: 18px;
-        }
-
-        .menu-buttons button {
-            position: relative;
-            padding: 11px 26px;
-            border-radius: 14px;
-            border: none;
-            background: rgba(255,255,255,0.18);
-            color: #fff;
-            cursor: pointer;
-            font-size: 0.95em;
-            overflow: hidden;
-            transition: all 0.35s ease;
-        }
-
-        .menu-buttons button::before {
-            content:"";
-            position:absolute;
-            inset:0;
-            background:linear-gradient(120deg, transparent, rgba(255,255,255,0.45), transparent);
-            transform:translateX(-120%);
-            transition: transform 0.6s ease;
-        }
-
-        .menu-buttons button:hover::before {
-            transform: translateX(120%);
-        }
-
-        .menu-buttons button:hover {
-            background: rgba(255,255,255,0.35);
-            transform: translateY(-3px) scale(1.05);
-            box-shadow:0 12px 30px rgba(0,0,0,0.45);
-        }
-
-        .content {
-            max-width: 1100px;
-            margin: 60px auto;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .search-card {
-            background: rgba(0,0,0,0.45);
-            padding:30px;
-            border-radius:18px;
-            margin:30px auto;
-            max-width:520px;
-            box-shadow:0 12px 30px rgba(0,0,0,0.35);
-        }
-
-        .search-card input[type="text"] {
-            width:70%;
-            padding:12px;
-            border-radius:10px;
-            border:none;
-            margin-right:10px;
-        }
-
-        .search-card input[type="submit"] {
-            position:relative;
-            padding:12px 24px;
-            border-radius:14px;
-            border:none;
-            background:#1a73e8;
-            color:#fff;
-            cursor:pointer;
-            font-size:0.95em;
-            overflow:hidden;
-            transition: all 0.35s ease;
-        }
-
-        .search-card input[type="submit"]::before {
-            content:"";
-            position:absolute;
-            inset:0;
-            background:linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent);
-            transform:translateX(-120%);
-            transition: transform 0.6s ease;
-        }
-
-        .search-card input[type="submit"]:hover::before {
-            transform:translateX(120%);
-        }
-
-        .search-card input[type="submit"]:hover {
-            background:#155ab6;
-            transform:translateY(-3px) scale(1.05);
-            box-shadow:0 12px 30px rgba(0,0,0,0.45);
-        }
-
+    {% if weather and "error" not in weather %}
+    <div style="margin-top: 30px; animation: fadeIn 0.8s ease-out;">
+        <img src="{{ weather.icon }}" width="110" alt="icon" style="filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));">
         
-        .grid {
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-            gap:25px;
-            margin-top:40px;
-        }
-
-        .metric-card {
-            background: rgba(0,0,0,0.45);
-            padding:25px;
-            border-radius:18px;
-            box-shadow:0 10px 30px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease;
-        }
-
-        .metric-card:hover { transform:translateY(-8px); }
-
-        .metric-card h3 { font-size:1em; opacity:0.85; margin-bottom:10px; }
-
-        .metric-card p { font-size:1.6em; font-weight:bold; }
-
-        .favorites {
-            background: rgba(0,0,0,0.45);
-            padding:25px;
-            border-radius:18px;
-            max-width:520px;
-            margin:40px auto;
-            text-align:left;
-        }
-
-        .favorites ul { list-style:none; padding:0; }
-
-        .favorites li { padding:8px 0; cursor:pointer; transition:0.2s; }
-
-        .favorites li:hover { color:#ffa500; }
-
-        .spinner {
-            border:4px solid rgba(255,255,255,0.3);
-            border-top:4px solid #fff;
-            border-radius:50%;
-            width:30px;
-            height:30px;
-            animation:spin 1s linear infinite;
-            margin:30px auto;
-            display:none;
-        }
-
-        @keyframes spin { to { transform:rotate(360deg); } }
-
-        .notification {
-            position:fixed;
-            top:80px;
-            right:20px;
-            background:rgba(26,115,232,0.95);
-            padding:15px 25px;
-            border-radius:12px;
-            opacity:0;
-            transform:translateY(-20px);
-            transition:0.4s ease;
-            z-index:1000;
-        }
-
-        .notification.show { opacity:1; transform:translateY(0); }
-
-        .charts-container {
-            display:flex;
-            flex-wrap:wrap;
-            gap:30px;
-            justify-content:center;
-            margin:50px auto;
-            max-width:1200px;
-        }
-
-        .chart-card {
-            flex:1 1 45%;
-            min-width:300px;
-            background:rgba(0,0,0,0.45);
-            border-radius:22px;
-            padding:30px;
-            box-shadow:0 15px 35px rgba(0,0,0,0.4);
-        }
-
-        .chart-card h3 {
-            margin-bottom:20px;
-            opacity:0.85;
-            font-weight:normal;
-            text-align:center;
-        }
-
-        /* DARK MODE */
-body.dark-mode {
-    background: linear-gradient(to right, #0d1b2a, #1b263b);
-    color: #e0e0e0;
-}
-
-body.dark-mode .navbar {
-    background: rgba(20, 30, 50, 0.75);
-    box-shadow: 0 10px 35px rgba(0,0,0,0.6);
-}
-
-body.dark-mode .metric-card,
-body.dark-mode .search-card,
-body.dark-mode .chart-card,
-body.dark-mode .favorites {
-    background: rgba(30, 40, 60, 0.8);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
-}
-
-body.dark-mode input[type="text"],
-body.dark-mode input[type="submit"],
-body.dark-mode button {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-}
-
-.pulse {
-    display: inline-block;
-    animation: pulse 1.2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.3); }
-    100% { transform: scale(1); }
-}
-
-.coords-btn {
-    display: inline-block;
-    padding: 11px 20px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.18);
-    color: #fff;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.95em;
-    font-weight: bold;
-    margin-left: 10px;
-    text-align: center;
-    cursor: default;
-    user-select: none;
-    transition: all 0.35s ease;
-}
-
-.coords-btn:hover {
-    background: rgba(255,255,255,0.35);
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-}
-
-
-    </style>
-</head>
-<body>
-
-<!-- NAVBAR -->
-<div class="navbar">
-    <div class="logo">
-        <span>🌦️</span>
-        <div>
-            <div>WeatherLy</div>
-            <div class="typewriter" id="typewriter"></div>
+        <h2 style="font-size: 64px; margin: 10px 0; font-weight: 800; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            {{ weather.temperature }}°C
+        </h2>
+        
+        <h3 style="text-transform: uppercase; letter-spacing: 3px; font-weight: 500;">{{ city }}</h3>
+        
+        <p style="font-style: italic; color: var(--primary); font-size: 1.3rem; margin-bottom: 20px;">
+            {{ weather.condition }}
+        </p>
+        
+        <div class="stat-item" style="display: inline-block; padding: 15px 30px; background: rgba(255,255,255,0.05); border-radius: 15px;">
+            <p style="margin: 0;"><strong>💡 Sfat:</strong> {{ message }}</p>
+        </div>
+        
+        <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+            <a href="/more_details/{{ city }}" class="btn" style="padding: 12px 25px;">
+                <i class="fas fa-chart-line"></i> Detalii Avansate
+            </a>
         </div>
     </div>
 
-    <div class="menu-buttons">
-        {% if city %}
-<div id="coordsDisplay" class="coords-btn">
-    <span class="pulse">🌍</span> {{ weather.lat }} &nbsp; 
-    <span class="pulse">📍</span> {{ weather.lon }}
-</div>
-{% endif %}
-
-        <a href="{{ url_for('about') }}"><button>About Us</button></a>
-        {% if current_user.is_authenticated %}
-            <a href="{{ url_for('logout') }}"><button>Logout</button></a>
-        {% else %}
-            <a href="{{ url_for('login') }}"><button>Log In</button></a>
-        {% endif %}
-        <a href="{{ url_for('metric_data') }}"><button>Metric Info</button></a>
-        {% if city %}
-            <button id="darkModeBtn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
-        {% endif %}
-
-    </div>
-</div>
-
-<!-- CONTENT -->
-<div class="content">
-    <h1>
-        {% if city %} Vremea în {{ city }} {% else %} Bun venit pe WeatherLy! {% endif %}
-    </h1>
-
-    {% if current_user.is_authenticated %}
-        <p>Salut, <strong>{{ current_user.username }}</strong> 👋</p>
-
-        <form method="POST" action="{{ url_for('add_favorite') }}" class="search-card">
-            <input type="text" name="city" placeholder="Adaugă oraș favorit..." required>
-            <input type="submit" value="Adaugă">
-        </form>
-
-        {% if current_user.favorite_cities %}
-        <div class="favorites">
-            <h3>Orașe favorite</h3>
-            <ul>
-                {% for fav_city in current_user.favorite_cities %}
-                    <li onclick="fillCity('{{ fav_city }}')">{{ fav_city }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-    {% endif %}
-
-    <form method="POST" id="weatherForm" class="search-card">
-        <input type="text" name="city" placeholder="Introdu orașul..." required>
-        <input type="submit" value="Caută">
-    </form>
-
-    <div class="spinner" id="spinner"></div>
-
-    {% if weather.get('error') %}
-        <p>{{ weather.get('error') }}</p>
-    {% elif city %}
-    <div class="grid">
-        <div class="metric-card"><h3>Temperatura</h3><p>{{ weather.temperature }}°C</p></div>
-        <div class="metric-card"><h3>Feels Like</h3><p>{{ weather.feelslike_c }}°C</p></div>
-        <div class="metric-card"><h3>Condition</h3><p>{{ weather.condition }}</p></div>
-        <div class="metric-card"><h3>Humidity</h3><p>{{ weather.humidity }}%</p></div>
-        <div class="metric-card"><h3>Wind</h3><p>{{ weather.wind_kph }} kph</p></div>
-        <div class="metric-card"><h3>UV Index</h3><p>{{ weather.uv }}</p></div>
-        <div class="metric-card"><h3>Pressure</h3><p>{{ weather.pressure }} mb</p></div>
-        <div class="metric-card"><h3>Visibility</h3><p>{{ weather.visibility }} km</p></div>
+    {% elif message %}
+    <div class="stat-item" style="margin-top: 20px; border-color: #ff4d4d; background: rgba(255, 77, 77, 0.1);">
+        <p style="color: #ff4d4d; margin: 0;"><i class="fas fa-exclamation-circle"></i> {{ message }}</p>
     </div>
     {% endif %}
 </div>
 
-<div id="weatherNotification" class="notification">{% if message %}{{ message }}{% endif %}</div>
+<style>
 
-<!-- CHARTS  -->
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
 
-{% if city and hourly_temps %}
-<div class="charts-container">
+.auth-input {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid var(--primary);
+    font-weight: 600;
+}
+</style>
 
-     <div class="chart-card">
-        <h3>Harta orașului {{ city }}</h3>
-        <div id="cityMap" style="height: 500px; width: 100%;"></div>
-    </div>
-    
-    <div class="chart-card">
-        <h3>Hourly Temperature</h3>
-        <canvas id="weatherChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-        <h3>Forecast pe ore 📈</h3>
-        <canvas id="hourlyChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-        <h3>Daily Temperature Comparison</h3>
-        <canvas id="dailyChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-        <h3>Hourly Wind (kph)</h3>
-        <canvas id="windChart"></canvas>
-    </div>
-
-</div>
-{% endif %}
-
-<!-- SCRIPTS -->
 <script>
-const darkToggle = document.getElementById('darkModeToggle');
-const body = document.body;
 
-function toggleDarkMode() {
-    body.classList.toggle('dark-mode');
-    const isDark = body.classList.contains('dark-mode');
-    localStorage.setItem('darkMode', isDark);
-    darkToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-}
+const cities = [
+    "Abu Dhabi", "Amsterdam", "Ankara", "Athens", "Baghdad", "Baku",
+    "Bamako", "Bangkok", "Beijing", "Belgrade", "Berlin", "Bern", "Bogotá", "Brasília", "Bratislava", "Brussels",
+    "Bucharest", "Budapest", "Cairo", "Canberra", "Caracas", "Casablanca", "Helsinki", "Islamabad", "Jakarta", "Jerusalem",
+    "Kabul", "Kampala", "Kathmandu", "Khartoum", "Kigali", "Kingston", "Kinshasa", "Kuala Lumpur", "Kuwait City", "La Paz",
+    "Lisbon", "London", "Luanda", "Lusaka", "Madrid", "Malabo", "Managua", "Manila", "Maputo", "Minsk",
+    "Moscow", "Muscat", "Nairobi", "New Delhi", "Oslo", "Ottawa", "Paris", "Phnom Penh", "Podgorica", "Port Louis",
+    "Port Moresby", "Port-au-Prince", "Porto-Novo", "Prague", "Pretoria", "Pyongyang", "Quito", "Rabat", "Reykjavik", "Riga"
+];
 
-{% if city %}
-    
-    if(localStorage.getItem('darkMode') === 'true'){
-        body.classList.add('dark-mode');
-        darkToggle.textContent = '☀️ Light Mode';
+const input = document.getElementById("cityInput");
+
+let i = 0;          // index curent
+let j = 0;          // index litera curenta
+let forward = true; 
+
+function typePlaceholder() {
+    const city = cities[i];
+    if(forward) {
+        j++;
+        input.placeholder = `Caută un oraș (ex: ${city.slice(0,j)})...`;
+        if(j === city.length) {
+            forward = false;
+            setTimeout(typePlaceholder, 1000); 
+            return;
+        }
     } else {
-        darkToggle.textContent = '🌙 Dark Mode';
+        j--;
+        input.placeholder = `Caută un oraș (ex: ${city.slice(0,j)})...`;
+        if(j === 0) {
+            forward = true;
+            i = (i + 1) % cities.length; 
+        }
     }
-
-    darkToggle.addEventListener('click', toggleDarkMode);
-
-{% else %}
-    body.classList.remove('dark-mode');
-    if(darkToggle) darkToggle.style.display = 'none';
-    localStorage.setItem('darkMode', false);
-{% endif %}
-</script>
-
-
-<script>
-const text = "Rain or Sun, we got you covered!";
-const el = document.getElementById("typewriter");
-let i = 0;
-(function type() {
-    el.textContent = text.slice(0, i++);
-    if(i <= text.length) setTimeout(type, 90);
-})();
-
-const form = document.getElementById('weatherForm');
-const spinner = document.getElementById('spinner');
-form.addEventListener('submit', () => spinner.style.display = 'block');
-window.addEventListener('load', () => spinner.style.display = 'none');
-
-function fillCity(city){
-    document.querySelector('#weatherForm input[name="city"]').value = city;
+    setTimeout(typePlaceholder, 150);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const n = document.getElementById('weatherNotification');
-    {% if message %}
-        setTimeout(() => n.classList.add('show'), 400);
-        setTimeout(() => n.classList.remove('show'), 5500);
-    {% endif %}
-});
+//start animatie
+typePlaceholder();
 </script>
 
-{% if city %}
-<script>
-const map = L.map('cityMap').setView([{{ weather.lat }}, {{ weather.lon }}], 10);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors',
-    maxZoom: 18
-}).addTo(map);
-
-L.marker([{{ weather.lat }}, {{ weather.lon }}]).addTo(map)
-    .bindPopup(`<b>{{ city }}</b><br>Temperatura: {{ weather.temperature }}°C<br>Condition: {{ weather.condition }}`)
-    .openPopup();
-</script>
-{% endif %}
-
-
-{% if city and hourly_temps %}
-<script>
-    const labels = {{ hour_labels | tojson }};
-    const tempData = {{ hourly_temps | tojson }};
-    const windData = {{ hourly_wind | tojson }};
-    const humidityData = {{ hourly_humidity | tojson }};
-    const dailyLabels = {{ daily_labels | tojson }};
-    const dailyMax = {{ daily_max | tojson }};
-    const dailyMin = {{ daily_min | tojson }};
-
-    const ctxWeather = document.getElementById('weatherChart').getContext('2d');
-    new Chart(ctxWeather, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: tempData,
-                borderColor: '#81d4fa',
-                backgroundColor: 'rgba(129,212,250,0.35)',
-                fill: true,
-                tension: 0.45,
-                pointRadius: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { x: { display: false }, y: { display: false } }
-        }
-    });
-
-    const ctxHourly = document.getElementById('hourlyChart').getContext('2d');
-    const gradient = ctxHourly.createLinearGradient(0,0,0,250);
-    gradient.addColorStop(0,'rgba(26,115,232,0.45)');
-    gradient.addColorStop(1,'rgba(26,115,232,0.05)');
-    new Chart(ctxHourly, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Temperatură (°C)', data: tempData, borderColor:'#1a73e8', backgroundColor: gradient, fill:true, tension:0.45, pointRadius:3, pointHoverRadius:6 },
-                { label: 'Vânt (kph)', data: windData, borderColor:'#00e5ff', tension:0.4, borderDash:[6,6], pointRadius:0 },
-                { label: 'Umiditate (%)', data: humidityData, borderColor:'#7CFFB2', tension:0.4, borderDash:[2,4], pointRadius:0 }
-            ]
-        },
-        options: {
-            responsive:true,
-            plugins:{ legend:{ labels:{ color:'#fff' } }, tooltip:{ backgroundColor:'rgba(0,0,0,0.85)', titleColor:'#fff', bodyColor:'#fff', borderWidth:1, borderColor:'#1a73e8' } },
-            scales: { x:{ ticks:{color:'#fff'}, grid:{color:'rgba(255,255,255,0.05)'} }, y:{ ticks:{color:'#fff'}, grid:{color:'rgba(255,255,255,0.05)'} } }
-        }
-    });
-
-    const ctxDaily = document.getElementById('dailyChart').getContext('2d');
-    new Chart(ctxDaily, {
-        type:'bar',
-        data: {
-            labels: dailyLabels,
-            datasets: [
-                { label:'Max Temp (°C)', data: dailyMax, backgroundColor:'rgba(255,99,132,0.6)' },
-                { label:'Min Temp (°C)', data: dailyMin, backgroundColor:'rgba(54,162,235,0.6)' }
-            ]
-        },
-        options: {
-            responsive:true,
-            plugins:{ legend:{ labels:{ color:'#fff' } } },
-            scales: { x:{ ticks:{color:'#fff'}, grid:{color:'rgba(255,255,255,0.05)'} }, y:{ ticks:{color:'#fff'}, grid:{color:'rgba(255,255,255,0.05)'} } }
-        }
-    });
-
-    const ctxWind = document.getElementById('windChart').getContext('2d');
-    new Chart(ctxWind, {
-        type:'line',
-        data: {
-            labels: labels,
-            datasets:[{ label:'Wind (kph)', data: windData, borderColor:'#00e5ff', fill:false, tension:0.4 }]
-        },
-        options: {
-            responsive:true,
-            plugins:{ legend:{ labels:{ color:'#fff' } } },
-            scales: { x:{ ticks:{color:'#fff'}, grid:{color:'rgba(255,255,255,0.05)'} }, y:{ ticks:{color:'#fff'}, grid:{color:'rgba(255,255,255,0.05)'} } }
-        }
-    });
-</script>
-{% endif %}
-
-</body>
-</html>
+{% endblock %}
