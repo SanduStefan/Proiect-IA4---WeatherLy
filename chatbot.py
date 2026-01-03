@@ -78,19 +78,20 @@ def get_tourist_attractions(city):
 def options_message():
     return (
         "🤖 Pot răspunde la următoarele tipuri de cereri:\n\n"
-        "• Informații meteo pentru un oraș\n"
-        "  ex: Vremea în Oslo\n\n"
-        "• Comparații între două orașe\n"
-        "  ex: Compara Londra cu Paris\n\n"
-        "• Alerte meteo extreme\n"
-        "  ex: Alertă Roma\n\n"
-        "• Listă de bagaj\n"
-        "  ex: Ce iau cu mine în Berlin?\n\n"
-        "• Recomandări de vacanță\n"
-        "  ex: Recomandă o destinație de vacanță la mare\n\n"
-        "• Atracții turistice (opțiune valabilă doar pentru anumite orașe)\n"
-        "  ex: Turism Brașov sau Turism Praga"
+        "--- Informații meteo pentru un oraș\n\n"
+        "(Ex: \"Vremea în Oslo\")\n\n"
+        "--- Comparații între două orașe\n\n"
+        "(Ex: \"Compara Londra cu Paris\")\n\n"
+        "--- Alerte meteo extreme\n\n"
+        "(Ex: \"Alertă Roma\")\n\n"
+        "--- Listă de bagaj\n\n"
+        "(Ex: \"Ce iau cu mine în Berlin?\")\n\n"
+        "--- Recomandări de vacanță\n\n"
+        "(Ex: \"Recomandă o destinație de vacanță la mare\")\n\n"
+        "--- Atracții turistice (opțiune valabilă doar pentru anumite orașe)\n\n"
+        "(Ex: \"Turism Brașov\" sau \"Turism Praga\") ---"
     )
+
 
 
 def get_chatbot_response(user_input, user_profile=None):
@@ -101,7 +102,7 @@ def get_chatbot_response(user_input, user_profile=None):
    
     if "info orase" in clean_input:
         return (
-            "🤖 Chatbotul are informații despre peste 450 de orașe, "
+            "🤖 Chatbotul are informații despre peste 400 de orașe, "
             "care se pot găsi aici: <a href='/popular_cities'>Lista de orașe</a>"
         )
     
