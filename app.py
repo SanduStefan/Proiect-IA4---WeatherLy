@@ -2,9 +2,10 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+
 from auth import db, User
 from weather_data import get_weather
-from utils import weather_message, get_uv_advice
+from utils import weather_message, get_uv_advice, get_continent
 from chatbot import get_chatbot_response
 from city_manager import DESTINATIONS, TOP_CITIES
 
@@ -27,12 +28,12 @@ with app.app_context():
 
 def get_bg_video(condition):
     cond = condition.lower() if condition else ""
-    if any(x in cond for x in ["fog", "ceață", "mist"]): return "fog.mp4"
-    if any(x in cond for x in ["soare", "sunny", "însorit"]): return "sun.mp4"
-    if any(x in cond for x in ["senin", "clear"]): return "clear.mp4"
-    if any(x in cond for x in ["rain", "ploaie", "drizzle", "burniță", "ploi"]): return "rain.mp4"
-    if any(x in cond for x in ["cloud", "nor", "acoperit"]): return "cloud.mp4"
-    if any(x in cond for x in ["snow", "zapada", "ninsori"]): return "snow.mp4"
+    if any(x in cond for x in ["fog", "ceață", "mist", "vizibilitate"]): return "fog.mp4"
+    if any(x in cond for x in ["soare", "sunny", "însorit", "canicula"]): return "sun.mp4"
+    if any(x in cond for x in ["senin", "clear", "cer", "clar"]): return "clear.mp4"
+    if any(x in cond for x in ["rain", "ploaie", "drizzle", "burniță", "ploi", "furtuni"]): return "rain.mp4"
+    if any(x in cond for x in ["cloud", "nor", "nori", "acoperit", "înnorat"]): return "cloud.mp4"
+    if any(x in cond for x in ["snow", "zapada", "ninsori", "lapoviță", "ninsoare"]): return "snow.mp4"
     return "default.mp4"
 
 @app.route("/", methods=["GET", "POST"])
@@ -44,27 +45,101 @@ def index():
 
     w = get_weather(city)
     bg = get_bg_video(w.get("condition", ""))
-    msg = weather_message(w.get("temperature", 20), w.get("condition", "")) if "error" not in w else w.get("error")
-    return render_template("index.html", weather=w, city=city, message=msg, bg_video=bg)
 
-# RUTA CORECTATĂ PENTRU DETALII
+    msg = weather_message(w.get("temperature", 20), w.get("condition", "")) if "error" not in w else w.get("error")
+
+    continent = None
+    if w and "lat" in w and "lon" in w and w["lat"] is not None and w["lon"] is not None:
+        continent = get_continent(w["lat"], w["lon"])
+
+    return render_template(
+        "index.html",
+        weather=w,
+        city=city,
+        message=msg,
+        bg_video=bg,
+        continent=continent
+    )
+
 @app.route("/more_details/<city>")
 def more_details(city):
     w = get_weather(city)
     if "error" in w:
         return redirect(url_for('index'))
-    
+
+  
+    continent = get_continent(w.get("lat"), w.get("lon")) if w.get("lat") and w.get("lon") else None
+
     bg = get_bg_video(w.get("condition", ""))
     advice = get_uv_advice(w.get("uv", 0))
-    # Simulare istoric temperaturi pentru grafic
-    temp_history = [w['temperature']-2, w['temperature']-1, w['temperature']+2, w['temperature']+3, w['temperature']+1, w['temperature']-1, w['temperature']]
-    
-    return render_template("more_details.html", 
-                           weather=w, 
-                           city=city, 
-                           uv_advice=advice, 
-                           bg_video=bg, 
-                           temp_history=temp_history)
+
+    temp_history = [
+        w["temperature"] - 2,
+        w["temperature"] - 1,
+        w["temperature"],
+        w["temperature"] + 1,
+        w["temperature"] + 2,
+        w["temperature"] + 1,
+        w["temperature"]
+    ]
+
+    daily_min = [w.get("temp_min", w["temperature"] - 3)]
+    daily_max = [w.get("temp_max", w["temperature"] + 3)]
+    hour_labels = ["00:00", "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00"]
+
+    hourly_temps = [
+        w["temperature"] - 2,
+        w["temperature"] - 1,
+        w["temperature"],
+        w["temperature"] + 1,
+        w["temperature"] + 2,
+        w["temperature"] + 1,
+        w["temperature"],
+        w["temperature"] - 1
+    ]
+
+    hourly_feelslike = [
+        w.get("feelslike_c", w["temperature"]) - 2,
+        w.get("feelslike_c", w["temperature"]) - 1,
+        w.get("feelslike_c", w["temperature"]),
+        w.get("feelslike_c", w["temperature"]) + 1,
+        w.get("feelslike_c", w["temperature"]) + 2,
+        w.get("feelslike_c", w["temperature"]) + 1,
+        w.get("feelslike_c", w["temperature"]),
+        w.get("feelslike_c", w["temperature"]) - 1
+    ]
+
+    hourly_wind = [
+        w["wind_kph"] - 2,
+        w["wind_kph"],
+        w["wind_kph"] + 1,
+        w["wind_kph"] + 2,
+        w["wind_kph"],
+        w["wind_kph"] - 1,
+        w["wind_kph"] - 2,
+        w["wind_kph"]
+    ]
+
+    hourly_humidity = [w["humidity"]] * 8
+    hourly_precip = [0, 0, 0.2, 0.5, 0.3, 0, 0, 0]
+
+    return render_template(
+        "more_details.html",
+        weather=w,
+        city=city,
+        continent=continent,
+        uv_advice=advice,
+        bg_video=bg,
+        temp_history=temp_history,
+        daily_min=daily_min,
+        daily_max=daily_max,
+        hour_labels=hour_labels,
+        hourly_temps=hourly_temps,
+        hourly_feelslike=hourly_feelslike,
+        hourly_wind=hourly_wind,
+        hourly_humidity=hourly_humidity,
+        hourly_precip=hourly_precip
+    )
 
 @app.route("/popular_cities")
 def popular_cities():
@@ -93,6 +168,7 @@ def settings():
         db.session.commit()
         return redirect(url_for('index'))
     return render_template("settings.html", bg_video="login.mp4")
+
 
 @app.route("/api/chat", methods=["POST"])
 def chat_api():
@@ -136,6 +212,7 @@ def about():
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

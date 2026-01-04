@@ -8,7 +8,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     favorite_city = db.Column(db.String(100), default="Bucharest")
-    # Câmpuri noi
-    other_cities = db.Column(db.String(500), default="") # Ex: "Paris, Londra"
+
+    other_cities = db.Column(db.String(500), default="") 
     fav_destinations = db.Column(db.String(500), default="")
-    interests = db.Column(db.String(500), default="") # Ex: "Natură, Soare, Plajă"
+    interests = db.Column(db.String(500), default="")

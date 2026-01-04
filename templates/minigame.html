@@ -96,7 +96,6 @@
             item.style.top = (top + 5) + 'px';
         }, 30);
 
-        // Generăm următorul obiect
         spawnTimer = setTimeout(spawnItem, 700);
     }
 
@@ -114,8 +113,6 @@
         statusText.innerText = message;
         statusText.style.color = color;
         player.innerText = (score >= 150) ? '👑' : '💀';
-        
-        // Ștergem obiectele rămase pe ecran
         const items = container.querySelectorAll('div:not(#player)');
         items.forEach(i => i.remove());
     }

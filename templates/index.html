@@ -3,10 +3,10 @@
 <div class="card">
     <h1 style="margin-bottom: 20px;">Vremea în Timp Real</h1>
     
-    <form method="POST" class="search-box" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
-        <input type="text" name="city" placeholder="Caută un oraș (ex: Paris)..." required class="auth-input" style="width: 60%; margin: 0;">
-        <button type="submit" class="btn">Caută</button>
-    </form>
+   <form method="POST" class="search-box" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+    <input type="text" name="city" placeholder="Caută un oraș..." required class="auth-input" style="width: 60%; margin: 0;" id="cityInput">
+    <button type="submit" class="btn">Caută</button>
+</form>
 
     {% if weather and "error" not in weather %}
     <div style="margin-top: 30px; animation: fadeIn 0.8s ease-out;">
@@ -41,13 +41,13 @@
 </div>
 
 <style>
-/* Animație pentru apariția conținutului */
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Stil pentru input-ul din index (asigură contrastul negru pe alb) */
+
 .auth-input {
     background: #ffffff !important;
     color: #000000 !important;
@@ -55,4 +55,47 @@
     font-weight: 600;
 }
 </style>
+
+<script>
+
+const cities = [
+    "Abu Dhabi", "Amsterdam", "Ankara", "Athens", "Baghdad", "Baku",
+    "Bamako", "Bangkok", "Beijing", "Belgrade", "Berlin", "Bern", "Bogotá", "Brasília", "Bratislava", "Brussels",
+    "Bucharest", "Budapest", "Cairo", "Canberra", "Caracas", "Casablanca", "Helsinki", "Islamabad", "Jakarta", "Jerusalem",
+    "Kabul", "Kampala", "Kathmandu", "Khartoum", "Kigali", "Kingston", "Kinshasa", "Kuala Lumpur", "Kuwait City", "La Paz",
+    "Lisbon", "London", "Luanda", "Lusaka", "Madrid", "Malabo", "Managua", "Manila", "Maputo", "Minsk",
+    "Moscow", "Muscat", "Nairobi", "New Delhi", "Oslo", "Ottawa", "Paris", "Phnom Penh", "Podgorica", "Port Louis",
+    "Port Moresby", "Port-au-Prince", "Porto-Novo", "Prague", "Pretoria", "Pyongyang", "Quito", "Rabat", "Reykjavik", "Riga"
+];
+
+const input = document.getElementById("cityInput");
+
+let i = 0;
+let j = 0;
+let forward = true; 
+
+function typePlaceholder() {
+    const city = cities[i];
+    if(forward) {
+        j++;
+        input.placeholder = `Caută un oraș (ex: ${city.slice(0,j)})...`;
+        if(j === city.length) {
+            forward = false;
+            setTimeout(typePlaceholder, 1000); 
+            return;
+        }
+    } else {
+        j--;
+        input.placeholder = `Caută un oraș (ex: ${city.slice(0,j)})...`;
+        if(j === 0) {
+            forward = true;
+            i = (i + 1) % cities.length; 
+        }
+    }
+    setTimeout(typePlaceholder, 150);
+}
+
+typePlaceholder();
+</script>
+
 {% endblock %}

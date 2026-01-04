@@ -19,7 +19,9 @@ def get_weather(city):
             "pressure_mb": data["current"]["pressure_mb"],
             "precip_mm": data["current"]["precip_mm"],
             "visibility_km": data["current"]["vis_km"],
-            "icon": data["current"]["condition"]["icon"]
+            "icon": data["current"]["condition"]["icon"],
+            "lat": data["location"]["lat"],
+            "lon": data["location"]["lon"]
         }
     except:
         return {"error": "Eroare de conexiune la API."}

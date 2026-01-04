@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;800&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="{{ url_for('static', filename='images/favricon.PNG') }}" type="image/png">
+
+
     <style>
         body.dark-mode { background-color: #0a0a0b !important; color: #e0e0e0; }
         
@@ -54,6 +58,31 @@
             transform: scale(1.1) rotate(15deg);
             box-shadow: 0 15px 25px rgba(0, 210, 255, 0.5);
         }
+
+            .coords-box {
+        list-style: none;
+        padding: 6px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--primary);
+        background: rgba(255,255,255,0.08);
+        font-family: 'Courier New', monospace;
+        font-size: 0.85em;
+        letter-spacing: 0.6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        color: var(--text);
+    }
+
+    .coords-box strong {
+        color: var(--primary);
+    }
+
+    .coords-box .dot {
+        opacity: 0.4;
+    }
+
     </style>
 </head>
 <body>
@@ -71,6 +100,20 @@
         </div>
 
         <ul class="nav-links">
+
+            {% if continent %}
+    <li class="coords-box">
+        🌎 <strong>CONTINENT</strong> {{ continent }}
+    </li>
+    {% endif %}
+             {% if city and weather.lat and weather.lon %}
+        <li class="coords-box">
+            📍 <strong>LAT</strong> {{ "%.4f"|format(weather.lat) }}
+            <span class="dot">•</span>
+            🧭 <strong>LON</strong> {{ "%.4f"|format(weather.lon) }}
+        </li>
+        {% endif %}
+
             <li>
                 <button onclick="toggleDarkMode()" class="btn" id="dark-btn" style="background:none; border:1px solid var(--primary); padding: 5px 12px; cursor: pointer;">
                     <i class="fas fa-moon"></i>
@@ -119,12 +162,22 @@
             const darkModeStatus = localStorage.getItem('darkMode');
             if (darkModeStatus === 'enabled') document.body.classList.add('dark-mode');
             
-            const chatBox = document.getElementById('chat-box');
-            {% if current_user.is_authenticated %}
-                chatBox.innerHTML = `<div class="msg bot">Salut, <b>{{ current_user.username }}</b>! Bine ai revenit. Cu ce te pot ajuta astăzi?</div>`;
-            {% else %}
-                chatBox.innerHTML = `<div class="msg bot">Bună! Eu sunt asistentul tău WeatherLy. Te pot ajuta cu bagajul, recomandări de vacanță sau orice despre vreme!</div>`;
-            {% endif %}
+         const chatBox = document.getElementById('chat-box');
+    let welcomeMessages = [];
+
+    {% if current_user.is_authenticated %}
+        welcomeMessages = [
+            `Salut, <b>{{ current_user.username }}</b>! Bine ai revenit. Cu ce te pot ajuta astăzi?`,
+            "Scrie 'opțiuni' sau 'help' pentru ajutor! Scrie 'info orașe' pentru date despre orașele disponibile!"
+        ];
+    {% else %}
+        welcomeMessages = [
+            "Bună! Eu sunt asistentul tău WeatherLy. Te pot ajuta cu bagajul, recomandări de vacanță sau orice despre vreme!",
+            "Scrie 'opțiuni' sau 'help' pentru ajutor! Scrie 'info orașe' pentru date despre orașele disponibile!"
+        ];
+    {% endif %}
+
+    chatBox.innerHTML = welcomeMessages.map(msg => `<div class="msg bot">${msg}</div>`).join("");
         });
 
         function toggleDarkMode() {
@@ -165,5 +218,6 @@
             }
         }
     </script>
+    
 </body>
 </html>

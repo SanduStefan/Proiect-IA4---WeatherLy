@@ -7,7 +7,7 @@ def weather_message(temp, condition):
     cond = condition.lower()
     advice = ""
 
-    is_raining = any(x in cond for x in ["rain", "ploaie", "drizzle", "grindina", "shower", "burniță"])
+    is_raining = any(x in cond for x in ["rain", "ploaie", "drizzle", "grindina", "shower", "burniță", "ploi"])
     rain_advice = " Neapărat ia o umbrelă sau o pelerină!" if is_raining else ""
     
     if temp < -15:
@@ -29,3 +29,20 @@ def weather_message(temp, condition):
         advice += " Atenție la polei, ia încălțări cu talpă aderentă! 🥾"
         
     return advice + rain_advice
+
+def get_continent(lat, lon):
+    if lat >= 7 and lat <= 83 and lon >= -170 and lon <= -50:
+        return "America de Nord"
+    elif lat >= -55 and lat <= 12 and lon >= -81 and lon <= -35:
+        return "America de Sud"
+    elif lat >= 36 and lat <= 71 and lon >= -10 and lon <= 60:
+        return "Europa"
+    elif lat >= -35 and lat <= 37 and lon >= -17 and lon <= 51:
+        return "Africa"
+    elif lat >= -1 and lat <= 77 and lon >= 26 and lon <= 180:
+        return "Asia"
+    elif lat >= -47 and lat <= 0 and lon >= 110 and lon <= 180:
+        return "Oceania"
+    elif lat <= -60:
+        return "Antarctica"
+    return "Necunoscut / Ocean"
