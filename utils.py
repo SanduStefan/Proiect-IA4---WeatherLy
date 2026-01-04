@@ -7,7 +7,7 @@ def weather_message(temp, condition):
     cond = condition.lower()
     advice = ""
 
-    is_raining = any(x in cond for x in ["rain", "ploaie", "drizzle", "grindina", "shower", "burniță"])
+    is_raining = any(x in cond for x in ["rain", "ploaie", "drizzle", "grindina", "shower", "burniță", "ploi"])
     rain_advice = " Neapărat ia o umbrelă sau o pelerină!" if is_raining else ""
     
     if temp < -15:

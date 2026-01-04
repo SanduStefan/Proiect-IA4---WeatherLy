@@ -6,8 +6,7 @@ Tip: Aplicație meteo cu funcții personalizate, useri, joc
 
 Descriere aplicație: 
 
-WeatherLy este o aplicație meteo, ce oferă atât informații precise despre orașul căutat (precum coordonate temperatură, indice UV, etc), cât și date ușor de vizualizat, prin intermediul graficelor, hărților specifice fiecărui oraș în parte. Pe lângă toate funcționalitățile oferite pentru determinarea concretă a vremii într-un oraș anume, aplicația oferă și posibilitatea de autentificare pentru useri, aceștia având posibilitatea de a-și reține în cont informații importante, precum: orașe favorite, oraș principal, destinații de vis, etc. Aceste date
-pot fi găsite de fiecare user pe pagina dedicată, numită ,,Profil", vizibilă doar atunci când un user este logat.
+WeatherLy este o aplicație meteo, ce oferă atât informații precise despre orașul căutat (precum coordonate temperatură, indice UV, etc), cât și date ușor de vizualizat, prin intermediul graficelor, hărților specifice fiecărui oraș în parte. Pe lângă toate funcționalitățile oferite pentru determinarea concretă a vremii într-un oraș anume, aplicația oferă și posibilitatea de autentificare pentru useri, aceștia având posibilitatea de a-și reține în cont informații importante, precum: orașe favorite, oraș principal, destinații de vis, etc. Aceste date pot fi găsite de fiecare user pe pagina dedicată, numită ,,Profil", vizibilă doar atunci când un user este logat.
 Pagina ,,Orașe" cuprinde până la 450+ orașe importante ale lumii. Este, practic, o listă de orașe pentru care user-ul
 poate accesa informațiile esențiale despre vreme la momentul respectiv.
 În jurul acestei liste de orașe am creat WeatherBot-ul, un chatbot care poate comunica direct cu user-ul. Acest bot 
